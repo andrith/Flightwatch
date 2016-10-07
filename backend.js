@@ -12,7 +12,7 @@ const moment = require('moment');
 
 const db = require('./db');
 
-const scraper = require('./scraper.js');
+const gateInfoScraper = require('./gate-info-scraper.js');
 
 
 const server = app.listen(3000, function () {
@@ -27,7 +27,10 @@ app.get('/scrape', function(req, res) {
     //     console.log('Parser error', err);
     // });
 
-    scraper.scraper()
+    gateInfoScraper.scrape().then( gateData => {
+
+      res.send( gateData );
+    })
 
 
     // var j = schedule.scheduleJob('*/1 * * * *', function() {
@@ -80,8 +83,6 @@ app.get('/scrape', function(req, res) {
     //       });
     //     });
     //   });
-
-    res.send();
 
 });
 

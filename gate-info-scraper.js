@@ -1,7 +1,10 @@
 var request = require('request');
 var cheerio = require('cheerio');
 
-exports.scraper = () => {
+exports.scrape = () => {
+
+  const promise = new Promise( (resolve, reject) => {
+
     url = 'http://www.kefairport.is/English/Timetables/Departures/';
 
     request(url, function(error, response, html) {
@@ -10,14 +13,7 @@ exports.scraper = () => {
 
             var $ = cheerio.load(html);
             var date, flightNr, airline, destination, estimate, status;
-            var json = {
-                date: "",
-                flightNr: "",
-                airline: "",
-                destination: "",
-                estimate: "",
-                status: ""
-            };
+            var gateData = [];
 
             $('tbody tr').filter(function() {
 
@@ -30,16 +26,28 @@ exports.scraper = () => {
                 estimate = data.find("td:nth-of-type(5)").text();
                 status = data.find("td:nth-of-type(6)").text();
 
-                json.date = date;
-                json.flightNr = flightNr;
-                json.airline = airline;
-                json.destination = destination;
-                json.estimate = estimate;
-                json.status = status;
+                gateData.push({
+                  date,
+                  flightNr,
+                  airline,
+                  destination,
+                  estimate,
+                  status
+                });
 
-                console.log(json);
+            }); // <-- ahhh, semicolon :P
 
-            })
+            if( true /* TODO: check if all ok, or no http error codes */ ) {
+
+              resolve( gateData );
+
+            } else {
+              reject({ message: "There was an error because of something" });
+            }
+
         }
     })
+
+  });
+  return promise;
 }
