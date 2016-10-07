@@ -30,9 +30,20 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/html/index.html'))
 })
 
+<<<<<<< HEAD
+app.get('/heathrow', function(req, res) {
+   heathrowStatus.heathrowStatus().then( status => {
+     updateHeathrowData(status)
+     res.send(status)
+   })
+})
+
+app.get('/scrape', function(req, res) {
+=======
 // parser.on('error', function(err) {
 //     console.log('Parser error', err);
 // });
+>>>>>>> cf8ad3336eb4baa39f2a1d31abc1ff20a1553e3a
 
 //  var io = sio.listen(app.listen(1234));
 //    io.sockets.on('connection', function(socket) {
@@ -57,6 +68,15 @@ var j = schedule.scheduleJob('*/5  * * * * *', function() {
     updateFlightInfoWithGateInfo( gateData );
   });
 });
+
+function updateHeathrowData(heathrowData) {
+   const currentTime = moment().format("HH-MM")
+     heathrowData.filter(function(time){
+       return time.estimate = "06:00"
+       //Bæta við rétt tímabil
+     })
+}
+
 
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
@@ -167,6 +187,9 @@ app.get('/flight/:nr', (req, res) => {
   flightstats.getFlight(flightNumber, "2016-10-07").then( json => {
     console.log(json);
     res.json(json);
+  })
+  .catch( ex => {
+    console.error("error fetching flight: ", flightNumber);
   });
 });
 

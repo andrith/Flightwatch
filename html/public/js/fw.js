@@ -14,7 +14,6 @@ function httpGetAsync(theUrl, callback)
 $(document).ready(function() {
   $("#result-page").hide();
   $("#search-button").click( function(e) {
-    e.preventDefault();
     submitSearch();
     return false;
   });
@@ -46,9 +45,17 @@ function submitSearch(){
 }
 
 function processResults(response) {
-  console.log(response);
+  var parsedJSON = JSON.parse(response);
+  var request = parsedJSON.request;
+  var appendix = parsedJSON.appendix;
+  var flightStatus = parsedJSON.flightStatus;
+  console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
+  $("#info-header").html(flightStatus.carrierFsCode+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
+  $("#departure").html("Departure: " + flightStatus.operationalTimes.actualRunwayDeparture.dateUtc);
+  $("#flight-status").html();
+  $("#arrival").html("Arrival: " + flightStatus.operationalTimes.estimatedRunwayArrival.dateUtc);
 }
 /*
   var iosocket = io.connect('http://localhost:1234');

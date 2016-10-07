@@ -9,15 +9,24 @@ exports.getFlight = ( flightNumber, date ) => {
     fetch(url)
     .then( function(response){
       return response.json();
-
+    })
+    .then( json => {
+      console.log(json);
+      const flightId = json.flightTracks[0].flightId;
       // annað fetch á flightstats
-      const detailUrl = '';
+      const detailUrl = `https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/status/${flightId}?appId=5d677d15&appKey=ecc0ee4be44763b1bcdb75e98cf8f005`;
       fetch( detailUrl )
       .then( detailResponse => {
 
         resolve( detailResponse.json() );
+      })
+      .catch( ex => {
+        reject({error: ""});
       });
-      
+
+    })
+    .catch( ex => {
+      reject({error: ""});
     });
 
   });
