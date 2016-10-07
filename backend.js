@@ -10,17 +10,7 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 
-// JSON file DB
-const low = require('lowdb');
-const fileAsync = require('lowdb/lib/file-async');
-const db = low('flightwatch.json', {
-  storage: fileAsync
-});
-db.defaults({
-  flightInfo: {},
-  subscriptions: {}
-}).value();
-
+const db = require('./db');
 
 const scraper = require('./scraper.js');
 
@@ -133,5 +123,37 @@ app.post('/unsubscribe', (req, res) => {
     db.set(['subscriptions', flightNumber], remainingDeviceIds).value();
   }
   console.log(`unsubscribed ${flightNumber} from ${deviceId}`);
+  res.json({ message: 'Subscription removed' });
+});
+
+
+
+// ### REST endpoints
+
+const server = app.listen(8088, function () {
+   var host = server.address().address
+   var port = server.address().port
+   console.log("Flightwatch app listening at http://%s:%s", host, port)
+});
+
+// parse json POST requests into req.body
+const bodyParser = require('body-parser');
+app.use( bodyParser.json() );
+
+app.get('/flight/:nr', (req, res) => {
+  const flightNumber = req.params.nr;
+  // TODO: fetch information for flight from DB
+  res.json({ flight: flightNumber, departure: moment(), arrival: moment() });
+});
+
+app.post('/subscribe', (req, res) => {
+  const {flightNumber, deviceId} = req.body;
+  db.saveSubscription( flightNumber, deviceId );
+  res.json({ message: 'Subscription added' });
+});
+
+app.post('/unsubscribe', (req, res) => {
+  const {flightNumber, deviceId} = req.body;
+  db.removeSubscription( flightNumber, deviceId );
   res.json({ message: 'Subscription removed' });
 });
