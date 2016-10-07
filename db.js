@@ -10,6 +10,11 @@ db.defaults({
   pendingNotifications: {}
 }).value();
 
+exports.getSubscriptions = ( flightNumber, date ) => {
+  const flightKey = getFlightKey( flightNumber, date );
+  return db.get(['subscriptions', flightKey]).value();
+}
+
 exports.saveSubscription = ( flightNumber, date, deviceId ) => {
   const flightKey = getFlightKey( flightNumber, date );
   if( ! db.get(['subscriptions', flightKey]).value() ) {
@@ -30,6 +35,19 @@ exports.removeSubscription = ( flightNumber, date, deviceId ) => {
     db.set(['subscriptions', flightKey], remainingDeviceIds).value();
   }
   console.log(`unsubscribed ${flightKey} from ${deviceId}`);
+}
+
+exports.getFlightInfo = ( flightNumber, date ) => {
+  const flightKey = getFlightKey( flightNumber, date );
+  let flightInfo = db.get(['flightInfo', flightKey]).value();
+  if( ! flightInfo ) flightInfo = {};
+  db.set(['flightInfo', flightKey], flightInfo).value();
+  return flightInfo;
+}
+
+exports.setFlightInfo = ( flightNumber, date, flightInfo ) => {
+  const flightKey = getFlightKey( flightNumber, date );
+  db.set(['flightInfo', flightKey], flightInfo).value();
 }
 
 function getFlightKey( flightNumber, date ) {
