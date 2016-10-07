@@ -10,6 +10,11 @@ db.defaults({
   pendingNotifications: {}
 }).value();
 
+exports.getSubscribedFlights = () => {
+
+  return Object.keys( db.get('subscriptions').value() );
+}
+
 exports.getSubscriptions = ( flightNumber, date ) => {
   const flightKey = getFlightKey( flightNumber, date );
   return db.get(['subscriptions', flightKey]).value();
