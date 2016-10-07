@@ -1,0 +1,52 @@
+body {
+  font-family: sans-serif;
+}
+
+#info-header, #scheduled, #note, #next-status, #seperator {
+  font-size: 1.5em;
+}
+
+#next-status, #flight-status, #scheduled {
+  margin-bottom: 1em;
+}
+
+#container{
+  width: 500px;
+  margin: auto;
+}
+
+#search-page, #result-page, #logo, #text{
+  text-align:center;
+}
+
+#flight-status {
+  background-image: url("circle.png");
+  height: 197px;
+  width: 215px;
+  color: white;
+  font-size: 4em;
+  vertical-align: middle;
+  padding-top: 20px;
+}
+
+div {
+  margin: auto;
+}
+
+.button {
+  background-color: #269998;
+  color: white;
+  width: 150px;
+  height: 80px;
+  line-height: 80px;
+  font-size: 2em;
+  vertical-align: middle;
+}
+
+input{
+  border: 2px solid #DDD;
+  border-radius: 0;
+  -webkit-appearance: none;
+  height: 40px;
+  font-size: 1.5em;
+}

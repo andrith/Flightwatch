@@ -1,0 +1,35 @@
+{
+  "name": "Flightwatch",
+  "version": "0.1.0",
+  "description": "App that sends notifications about flight stats",
+  "main": "backend.js",
+  "scripts": {
+    "start": "nodejs backend.js"
+  },
+  "dependencies": {
+    "express": "^4.14.0",
+    "eyes": "^0.1.8",
+    "mysql": "^2.11.1",
+    "node-gcm": "^0.14.4",
+    "node-schedule": "^1.1.1",
+    "socket.io": "^1.5.0",
+    "xml2js": "^0.4.17"
+  },
+  "engines": {
+    "node": "4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrith/Flightwatch.git"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "author": "Andri Þórhallsson",
+  "contributors": [
+    "Andri Þórhallsson <andrith@tmsoftware.is>"
+  ],
+  "license": "MIT"
+}
