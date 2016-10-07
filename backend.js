@@ -10,6 +10,7 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 const path = require('path');
+const fetch = require('node-fetch');
 
 app.use('/static', express.static(__dirname + '/html/public'))
 
@@ -17,6 +18,37 @@ const db = require('./db');
 
 const gateInfoScraper = require('./gate-info-scraper.js');
 
+function getFlight( flightNumber, date ) {
+  const flightPath = formatFlightNumberForPath( flightNumber );
+  const datePath = formatDateForPath( date );
+  var url = `https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${flightPath}/arr/${datePath}?appId=5d677d15&appKey=ecc0ee4be44763b1bcdb75e98cf8f005&utc=false&includeFlightPlan=false&maxPositions=2`
+  return fetch(url)
+  .then( function(response){
+    return response.json();
+  });
+}
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function formatFlightNumberForPath( flightNumber ) {
+  var airline = "";
+  var number = "";
+  for (var i = 0; i < flightNumber.length; i++) {
+    var char = flightNumber.substring(i, i+1);
+    if(isNumeric(char)){
+      number += char;
+    } else {
+      airline += char;
+    }
+  }
+  return airline + "/" + number;
+}
+
+function formatDateForPath( date ) {
+  return '2016/10/7';
+}
 
 const server = app.listen(3000, function () {
    const host = server.address().address
@@ -39,57 +71,15 @@ app.get('/scrape', function(req, res) {
       res.send( gateData );
     })
 
-
-    // var j = schedule.scheduleJob('*/1 * * * *', function() {
-    //
-    //     var data = '';
-    //     https.get('https://test.icelandair.is/origo-portlets/rm/services/rm.xml?RequestType=departures&Departure=KEF&GapBefore=10&GapAfter=20&locale=', function(res) {
-    //         console.log(res)
-    //         if (res.statusCode >= 200 && res.statusCode < 400) {
-    //             res.on('data', function(data_) {
-    //                 data += data_.toString();
-    //             });
-    //             res.on('end', function() {
-    //                 parser.parseString(data, function(err, result) {
-    //                     for (i = 0; i < result.destinations.destination[0].flights[0].flight.length; i++) {
-    //                         var row = result.destinations.destination[0].flights[0].flight[i];
-    //                         console.log(row)
-    //                     }
-    //                 });
-    //             });
-    //         }
-    //     });
-    //
-    //
-    //     var data2 = '';
-    //     https.get('https://test.icelandair.is/origo-portlets/rm/services/rm.xml?RequestType=arrivals&Departure=KEF&GapBefore=10&GapAfter=20&locale=', function(res) {
-    //         console.log(res)
-    //         if (res.statusCode >= 200 && res.statusCode < 400) {
-    //             res.on('data', function(data_) {
-    //                 data2 += data_.toString();
-    //             });
-    //             res.on('end', function() {
-    //                 parser.parseString(data2, function(err, result) {
-    //                     for (i = 0; i < result.destinations.destination[0].flights[0].flight.length; i++) {
-    //                         var row = result.destinations.destination[0].flights[0].flight[i];
-    //                         console.log(row)
-    //                     }
-    //                 });
-    //             });
-    //         }
-    //     });
-    //
-    // });
-
-    // var io = sio.listen(app.listen(1234));
-    //   io.sockets.on('connection', function(socket) {
-    //     socket.on("getFlight", (data) => {
-    //       console.log(data);
-    //       con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
-    //         socket.emit("flight", dbRows);
-    //       });
-    //     });
-    //   });
+     var io = sio.listen(app.listen(1234));
+       io.sockets.on('connection', function(socket) {
+         socket.on("getFlight", (data) => {
+           console.log(data);
+           con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
+             socket.emit("flight", dbRows);
+           });
+         });
+       });
 
 });
 
@@ -103,8 +93,10 @@ app.use( bodyParser.json() );
 
 app.get('/flight/:nr', (req, res) => {
   const flightNumber = req.params.nr;
-  // TODO: fetch information for flight from DB
-  res.json({ flight: flightNumber, departure: moment(), arrival: moment() });
+  getFlight(flightNumber, "2016-10-07").then( json => {
+    console.log(json);
+    res.json(json);
+  });
 });
 
 app.post('/subscribe', (req, res) => {

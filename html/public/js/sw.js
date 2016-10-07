@@ -33,15 +33,17 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('push', function(event) {
-  console.log('Push message', event);
-
-  var title = 'Flug FI343 lent';
+  var data = {};
+  if (event.data) {
+    data = event.data.json();
+  }
+  var title = data.title || "Something Has Happened";
+  var message = data.message || "Here's something you might want to check out.";
+  var icon = "logo.png";
 
   event.waitUntil(
     self.registration.showNotification(title, {
-      'body': 'FI343 lenti kl 16:00',
+      'body': message,
       'icon': 'logo.png'
     }));
 });
-
-// TODO
