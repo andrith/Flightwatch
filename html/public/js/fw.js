@@ -1,4 +1,16 @@
-var endpoint;
+var gcm_endpoint;
+
+function httpGetAsync(theUrl, callback)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            callback(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous
+    xmlHttp.send(null);
+}
+
 $(document).ready(function() {
   $("#result-page").hide();
   $("#search-button").click( function(e) {
@@ -10,13 +22,35 @@ $(document).ready(function() {
     $("#search-page").show();
     $("#result-page").hide();
   });
+
+  const monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ]
+
+  const date = new Date()
+  const day = date.getDate()
+  const monthIndex = date.getMonth()
+  const year = date.getFullYear()
+
+  $('#datepicker').val(day + ' ' + monthNames[monthIndex] + ', ' + year)
+
+  $('#datepicker').pickadate()
 });
 
 function submitSearch(){
-  iosocket.emit("getFlight", {endpoint: endpoint, flightNumber: $("#flightNumber").val()})
+  //iosocket.emit("getFlight", {endpoint: endpoint, flightNumber: $("#flightNumber").val()})
+  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val(), processResults);
+}
+
+function processResults(response) {
+  console.log(response);
   $("#search-page").hide();
   $("#result-page").show();
 }
+/*
   var iosocket = io.connect('http://localhost:1234');
 
   iosocket.on('connect', function () {
@@ -49,3 +83,4 @@ function submitSearch(){
         }
       });
   });
+*/
