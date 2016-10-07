@@ -50,10 +50,6 @@ function formatDateForPath( date ) {
   return '2016/10/7';
 }
 
-getFlight("FI657", "2016-10-07").then( json => {
-  console.log("flightstats json: ",  json );
-});
-
 const server = app.listen(3000, function () {
    const host = server.address().address
    const port = server.address().port
@@ -139,8 +135,9 @@ app.use( bodyParser.json() );
 
 app.get('/flight/:nr', (req, res) => {
   const flightNumber = req.params.nr;
-  // TODO: fetch information for flight from DB
-  res.json({ flight: flightNumber, departure: moment(), arrival: moment() });
+  getFlight(flightNumber, "2016-10-07").then( json => {
+    res.json(json);
+  });
 });
 
 app.post('/subscribe', (req, res) => {
