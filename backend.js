@@ -21,11 +21,11 @@ const gateInfoScraper = require('./gate-info-scraper.js');
 function getFlight( flightNumber, date ) {
   const flightPath = formatFlightNumberForPath( flightNumber );
   const datePath = formatDateForPath( date );
-  return fetch(`https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${flightPath}/arr/${datePath}?appId=5d677d15&appKey=ecc0ee4be44763b1bcdb75e98cf8f005&utc=false&includeFlightPlan=false&maxPositions=2`)
+  var url = `https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${flightPath}/arr/${datePath}?appId=5d677d15&appKey=ecc0ee4be44763b1bcdb75e98cf8f005&utc=false&includeFlightPlan=false&maxPositions=2`
+  return fetch(url)
   .then( function(response){
     return response.json();
-  })
-  .then( json => json );
+  });
 }
 
 function isNumeric(n) {
@@ -71,57 +71,15 @@ app.get('/scrape', function(req, res) {
       res.send( gateData );
     })
 
-
-    // var j = schedule.scheduleJob('*/1 * * * *', function() {
-    //
-    //     var data = '';
-    //     https.get('https://test.icelandair.is/origo-portlets/rm/services/rm.xml?RequestType=departures&Departure=KEF&GapBefore=10&GapAfter=20&locale=', function(res) {
-    //         console.log(res)
-    //         if (res.statusCode >= 200 && res.statusCode < 400) {
-    //             res.on('data', function(data_) {
-    //                 data += data_.toString();
-    //             });
-    //             res.on('end', function() {
-    //                 parser.parseString(data, function(err, result) {
-    //                     for (i = 0; i < result.destinations.destination[0].flights[0].flight.length; i++) {
-    //                         var row = result.destinations.destination[0].flights[0].flight[i];
-    //                         console.log(row)
-    //                     }
-    //                 });
-    //             });
-    //         }
-    //     });
-    //
-    //
-    //     var data2 = '';
-    //     https.get('https://test.icelandair.is/origo-portlets/rm/services/rm.xml?RequestType=arrivals&Departure=KEF&GapBefore=10&GapAfter=20&locale=', function(res) {
-    //         console.log(res)
-    //         if (res.statusCode >= 200 && res.statusCode < 400) {
-    //             res.on('data', function(data_) {
-    //                 data2 += data_.toString();
-    //             });
-    //             res.on('end', function() {
-    //                 parser.parseString(data2, function(err, result) {
-    //                     for (i = 0; i < result.destinations.destination[0].flights[0].flight.length; i++) {
-    //                         var row = result.destinations.destination[0].flights[0].flight[i];
-    //                         console.log(row)
-    //                     }
-    //                 });
-    //             });
-    //         }
-    //     });
-    //
-    // });
-
-    // var io = sio.listen(app.listen(1234));
-    //   io.sockets.on('connection', function(socket) {
-    //     socket.on("getFlight", (data) => {
-    //       console.log(data);
-    //       con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
-    //         socket.emit("flight", dbRows);
-    //       });
-    //     });
-    //   });
+     var io = sio.listen(app.listen(1234));
+       io.sockets.on('connection', function(socket) {
+         socket.on("getFlight", (data) => {
+           console.log(data);
+           con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
+             socket.emit("flight", dbRows);
+           });
+         });
+       });
 
 });
 
@@ -136,6 +94,7 @@ app.use( bodyParser.json() );
 app.get('/flight/:nr', (req, res) => {
   const flightNumber = req.params.nr;
   getFlight(flightNumber, "2016-10-07").then( json => {
+    console.log(json);
     res.json(json);
   });
 });
