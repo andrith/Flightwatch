@@ -123,6 +123,9 @@ app.get('/flight/:nr', (req, res) => {
   flightstats.getFlight(flightNumber, "2016-10-07").then( json => {
     console.log(json);
     res.json(json);
+  })
+  .catch( ex => {
+    console.error("error fetching flight: ", flightNumber);
   });
 });
 

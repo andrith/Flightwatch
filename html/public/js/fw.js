@@ -48,14 +48,14 @@ function processResults(response) {
   var parsedJSON = JSON.parse(response);
   var request = parsedJSON.request;
   var appendix = parsedJSON.appendix;
-  var flight = parsedJSON.flightTracks;
+  var flightStatus = parsedJSON.flightStatus;
   console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
-  $("#info-header").html(request.airline.requestedCode+request.flight.requested + " | " + flight[0].departureAirportFsCode + " to " + flight[0].arrivalAirportFsCode);
-  $("#departure").html();
+  $("#info-header").html(flightStatus.carrierFsCode+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
+  $("#departure").html("Departure: " + flightStatus.operationalTimes.actualRunwayDeparture.dateUtc);
   $("#flight-status").html();
-  $("#arrival").html();
+  $("#arrival").html("Arrival: " + flightStatus.operationalTimes.estimatedRunwayArrival.dateUtc);
 }
 /*
   var iosocket = io.connect('http://localhost:1234');
