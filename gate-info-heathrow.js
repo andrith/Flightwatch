@@ -1,4 +1,5 @@
 var axios = require('axios')
+var moment = require('moment');
 
 exports.heathrowStatus = () => {
 
@@ -10,10 +11,17 @@ exports.heathrowStatus = () => {
         const flightList = response.data.flightList
         const heathrowData = []
 
+        //Modify date
+        const thisYear = moment();
+
         flightList.forEach((data) => {
 
+          const dateAndMonth = data.flightScheduledDate.split('-');
+          thisYear.set('month', dateAndMonth[1]);
+          thisYear.set('date', dateAndMonth[0]);
+
             heathrowData.push({
-                 date: data.flightScheduledDate,
+                 date: thisYear.format("YYYY-MM-DD"),
                  flightNr: data.flightNumber,
                  airline: data.airlineName,
                  destination: data.city,
