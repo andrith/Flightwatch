@@ -30,7 +30,6 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/html/index.html'))
 })
 
-<<<<<<< HEAD
 app.get('/heathrow', function(req, res) {
    heathrowStatus.heathrowStatus().then( status => {
      updateHeathrowData(status)
@@ -39,11 +38,10 @@ app.get('/heathrow', function(req, res) {
 })
 
 app.get('/scrape', function(req, res) {
-=======
+
 // parser.on('error', function(err) {
 //     console.log('Parser error', err);
 // });
->>>>>>> cf8ad3336eb4baa39f2a1d31abc1ff20a1553e3a
 
 //  var io = sio.listen(app.listen(1234));
 //    io.sockets.on('connection', function(socket) {
