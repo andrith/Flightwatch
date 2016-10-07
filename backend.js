@@ -66,6 +66,7 @@ app.get('/', function (req, res) {
 
 app.get('/heathrow', function(req, res) {
    heathrowStatus.heathrowStatus().then( status => {
+     updateHeathrowData(status)
      res.send(status)
    })
 })
@@ -103,6 +104,15 @@ var j = schedule.scheduleJob('* * * * *', function() {
     updateFlightInfoWithGateInfo( gateData );
   });
 });
+
+function updateHeathrowData(heathrowData) {
+   const currentTime = moment().format("HH-MM")
+     heathrowData.filter(function(time){
+       return time.estimate = "06:00"
+       //Bæta við rétt tímabil
+     })
+}
+
 
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
