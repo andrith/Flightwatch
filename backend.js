@@ -66,6 +66,16 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
       // ok, so somone seems to be interested in this, so let's update flight information
       console.log(`Updating flight info with gate info for flight ${gate.flightNr}_${gate.date}`);
       const flightInfo = db.getFlightInfo( gate.flightNr, gate.date );
+
+      // get a possible notification for gate changes
+      const gateNotification = getNotificationFromGateInfo( flightInfo.gate, gate );
+      if( gateNotification ) {
+        // TODO: send notificaton via gcm...
+
+        // TODO: save notification to last notification for flight key in db
+      }
+
+      // update the gate info in db:
       flightInfo.gate = gate;
       db.setFlightInfo( gate.flightNr, gate.date, flightInfo );
       flightsUpdated++;
@@ -73,6 +83,19 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   });
   console.log(`Updated ${flightsUpdated} flights with gate info`);
 }
+
+/**
+ * If there are changes in interesting gate info, prepare a notification
+ * @return {String}   Notification regarding gate status change
+ */
+function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
+  let notification;
+  if( prevGateInfo.status !== newGateInfo.status ) {
+    notification = newGateInfo.status;
+  }
+  return notification;
+}
+
 
 // ### Flightstats
 
@@ -90,6 +113,16 @@ var j = schedule.scheduleJob('*/5 * * * * *', function() {
         console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
         console.log("flightstats: ", json);
         const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+
+        // get a possible notification for flightstat changes
+        const flightstatsNotification =
+          getNotificationFromFlightstatInfo( flightInfo, json );
+        if( flightstatsNotification ) {
+          // TODO: send notificaton via gcm...
+
+          // TODO: save notification to last notification for flight key in db
+        }
+
         flightInfo.stats = json;
         db.setFlightInfo( flightNumber, flightDate, flightInfo );
         flightsUpdated++;
@@ -99,6 +132,17 @@ var j = schedule.scheduleJob('*/5 * * * * *', function() {
   console.log(`Updated ${flightsUpdated} flights with flightstats`);
 });
 
+/**
+ * If there are changes in interesting flightstats info, prepare a notification
+ * @return {String}   Notification regarding flightstats change
+ */
+function getNotificationFromFlightstatInfo( prevFlightInfo, newFlightInfo ) {
+  let notification;
+  if( false /* something interesting has changed in flight stats */ ) {
+    // TODO
+  }
+  return notification;
+}
 
 // ### ~~~ REST endpoints
 
