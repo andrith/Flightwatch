@@ -10,6 +10,18 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 
+// JSON file DB
+const low = require('lowdb');
+const fileAsync = require('lowdb/lib/file-async');
+const db = low('flightwatch.json', {
+  storage: fileAsync
+});
+db.defaults({
+  flightInfo: {},
+  subscriptions: {}
+}).value();
+
+
 var con = mysql.createConnection({
   host: "localhost",
   user: "flightwatch",
@@ -87,15 +99,15 @@ var j = schedule.scheduleJob('*/15 * * * *', function(){
   }
 
 
-// var io = sio.listen(app.listen(1234));
-// io.sockets.on('connection', function(socket) {
-//   socket.on("getFlight", (data) => {
-//     console.log(data);
-//     con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
-//       socket.emit("flight", dbRows);
-//     });
-//   });
-// });
+var io = sio.listen(app.listen(1234));
+io.sockets.on('connection', function(socket) {
+  socket.on("getFlight", (data) => {
+    console.log(data);
+    con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
+      socket.emit("flight", dbRows);
+    });
+  });
+});
 
 
 
@@ -119,14 +131,24 @@ app.get('/flight/:nr', (req, res) => {
 
 app.post('/subscribe', (req, res) => {
   const {flightNumber, deviceId} = req.body;
-  // TODO: write subscription request for flight number and notification token to DB
-  console.log(`subscribe ${flightNumber} to ${deviceId}`);
+  // write subscription request for flight number and notification token to DB
+  if( ! db.get(['subscriptions', flightNumber]).value() ) {
+    db.set(['subscriptions', flightNumber], []).value();
+  }
+  db.get(['subscriptions', flightNumber]).push( deviceId ).value();
+  console.log(`subscribed ${flightNumber} to ${deviceId}`);
   res.json({ message: 'Subscription added' });
 });
 
 app.post('/unsubscribe', (req, res) => {
   const {flightNumber, deviceId} = req.body;
-  // TODO: remove subscription request for flight number and notification token from DB
-  console.log(`unsubscribe ${flightNumber} from ${deviceId}`);
+  // remove subscription request for flight number and notification token from DB
+  const subscribedDeviceIds = db.get(['subscriptions', flightNumber]).value();
+  if( subscribedDeviceIds ) {
+    const remainingDeviceIds = subscribedDeviceIds.filter(
+      oneId => oneId !== deviceId );
+    db.set(['subscriptions', flightNumber], remainingDeviceIds).value();
+  }
+  console.log(`unsubscribed ${flightNumber} from ${deviceId}`);
   res.json({ message: 'Subscription removed' });
 });
