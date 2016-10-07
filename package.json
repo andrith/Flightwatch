@@ -4,7 +4,8 @@
   "description": "App that sends notifications about flight stats",
   "main": "backend.js",
   "scripts": {
-    "start": "nodejs backend.js"
+    "start": "nodejs backend.js",
+    "scraper": "node scraper.js"
   },
   "dependencies": {
     "cheerio": "^0.22.0",
