@@ -8,6 +8,7 @@
     "scraper": "node scraper.js"
   },
   "dependencies": {
+    "axios": "^0.14.0",
     "body-parser": "^1.15.2",
     "cheerio": "^0.22.0",
     "express": "^4.14.0",

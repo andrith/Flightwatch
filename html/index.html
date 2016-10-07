@@ -4,13 +4,17 @@
   <head>
     <link href="https://fonts.googleapis.com/css?family=Dosis" rel="stylesheet">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Flightwatch</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="static/css/default.css">
+    <link rel="stylesheet" href="static/css/default.date.css">
     <!--script src="http://localhost:1234/socket.io/socket.io.js"></script-->
     <script type="text/javascript" src="static/js/fw.js"></script>
     <script type="text/javascript" src="static/js/main.js"></script>
     <link rel="stylesheet" href="static/css/fw.css">
+
   </head>
   <body>
     <div id="container">
@@ -18,9 +22,11 @@
         <img id="logo-img" src="static/img/logo.png">
       </div>
       <div id="search-page">
-        <input type="text" id="flightNumber" placeholder="  Flight number...">
-        <br><br>
-        <div id="search-button" class="button">Search</div>
+        <div class="search-inputs">
+          <input type="text" id="flightNumber" placeholder="Flight number..." />
+          <input type="text" id="datepicker" />
+        </div>
+        <button id="search-button" class="button">Go</button>
       </div>
       <div id="result-page">
         <div id="info-header"></div>
@@ -29,5 +35,11 @@
         <div id="arrival"></div>
       </div>
     </div>
+
+    <script type="text/javascript" src="static/js/picker.js"></script>
+    <script type="text/javascript" src="static/js/picker.date.js"></script>
+    <script type="text/javascript" src="static/js/fw.js"></script>
+    <script type="text/javascript" src="static/js/main.js"></script>
+
   </body>
 </html>

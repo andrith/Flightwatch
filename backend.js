@@ -10,6 +10,8 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 const path = require('path');
+var axios = require('axios')
+
 const fetch = require('node-fetch');
 
 app.use('/static', express.static(__dirname + '/html/public'))
@@ -17,6 +19,8 @@ app.use('/static', express.static(__dirname + '/html/public'))
 const db = require('./db');
 
 const gateInfoScraper = require('./gate-info-scraper.js');
+
+const heathrowStatus = require('./gate-info-heathrow.js');
 
 function getFlight( flightNumber, date ) {
   const flightPath = formatFlightNumberForPath( flightNumber );
@@ -60,6 +64,12 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/html/index.html'))
 })
 
+app.get('/heathrow', function(req, res) {
+   heathrowStatus.heathrowStatus().then( status => {
+     res.send(status)
+   })
+})
+
 app.get('/scrape', function(req, res) {
 
     // parser.on('error', function(err) {
@@ -84,8 +94,35 @@ app.get('/scrape', function(req, res) {
 });
 
 
-// ### REST endpoints
+// ### Gate info
 
+var j = schedule.scheduleJob('* * * * *', function() {
+
+  gateInfoScraper.scrape().then( gateData => {
+
+    updateFlightInfoWithGateInfo( gateData );
+  });
+});
+
+function updateFlightInfoWithGateInfo( gateInfoEntries ) {
+  let flightsUpdated = 0;
+  gateInfoEntries.forEach( e => {
+    const flightSubscriptions = db.getSubscriptions( e.flightNr, e.date );
+    if( flightSubscriptions && flightSubscriptions.length ) {
+      // ok, so somone seems to be interested in this, so let's update flight information
+      console.log(`Updating flight info with gate info for flight ${e.flightNr}_${e.date}`);
+      const flightInfo = db.getFlightInfo( e.flightNr, e.date );
+      const updatedFlightInfo = Object.assign( flightInfo, e );
+      db.setFlightInfo( e.flightNr, e.date, updatedFlightInfo );
+      flightsUpdated++;
+    }
+  });
+  console.log(`Updated ${flightsUpdated} flights with gate info`);
+}
+
+
+
+// ### REST endpoints
 
 // parse json POST requests into req.body
 const bodyParser = require('body-parser');
