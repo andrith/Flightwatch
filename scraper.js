@@ -6,7 +6,7 @@ var app     = express();
 
 app.get('/status', function(req, res) {
 
-  url = 'http://www.kefairport.is/Flugaaetlun/Brottfarir/';
+  url = 'http://www.kefairport.is/English/Timetables/Departures/';
 
   request(url, function(error, response, html) {
 
