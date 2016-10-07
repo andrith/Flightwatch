@@ -10,13 +10,14 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 const path = require('path');
+var axios = require('axios')
 
 app.use('/static', express.static(__dirname + '/html/public'))
 
 const db = require('./db');
 
 const gateInfoScraper = require('./gate-info-scraper.js');
-
+const heathrowStatus = require('./gate-info-heathrow.js');
 
 const server = app.listen(3000, function () {
    const host = server.address().address
@@ -26,6 +27,12 @@ const server = app.listen(3000, function () {
 
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/html/index.html'))
+})
+
+app.get('/heathrow', function(req, res) {
+   heathrowStatus.heathrowStatus().then( status => {
+     res.send(status)
+   })
 })
 
 app.get('/scrape', function(req, res) {
