@@ -10,6 +10,22 @@ $(document).ready(function() {
     $("#search-page").show();
     $("#result-page").hide();
   });
+
+  const monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ]
+
+  const date = new Date()
+  const day = date.getDate()
+  const monthIndex = date.getMonth()
+  const year = date.getFullYear()
+
+  $('#datepicker').val(day + ' ' + monthNames[monthIndex] + ', ' + year)
+
+  $('#datepicker').pickadate()
 });
 
 function submitSearch(){
