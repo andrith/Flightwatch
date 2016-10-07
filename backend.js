@@ -8,6 +8,7 @@ var schedule = require('node-schedule');
 var express = require('express');
 var app = express();
 var sio = require('socket.io');
+const moment = require('moment');
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -86,12 +87,46 @@ var j = schedule.scheduleJob('*/15 * * * *', function(){
   }
 
 
-var io = sio.listen(app.listen(1234));
-io.sockets.on('connection', function(socket) {
-  socket.on("getFlight", (data) => {
-    console.log(data);
-    con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
-      socket.emit("flight", dbRows);
-    });
-  });
+// var io = sio.listen(app.listen(1234));
+// io.sockets.on('connection', function(socket) {
+//   socket.on("getFlight", (data) => {
+//     console.log(data);
+//     con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
+//       socket.emit("flight", dbRows);
+//     });
+//   });
+// });
+
+
+
+// ### REST endpoints
+
+const server = app.listen(8088, function () {
+   var host = server.address().address
+   var port = server.address().port
+   console.log("Flightwatch app listening at http://%s:%s", host, port)
+});
+
+// parse json POST requests into req.body
+const bodyParser = require('body-parser');
+app.use( bodyParser.json() );
+
+app.get('/flight/:nr', (req, res) => {
+  const flightNumber = req.params.nr;
+  // TODO: fetch information for flight from DB
+  res.json({ flight: flightNumber, departure: moment(), arrival: moment() });
+});
+
+app.post('/subscribe', (req, res) => {
+  const {flightNumber, deviceId} = req.body;
+  // TODO: write subscription request for flight number and notification token to DB
+  console.log(`subscribe ${flightNumber} to ${deviceId}`);
+  res.json({ message: 'Subscription added' });
+});
+
+app.post('/unsubscribe', (req, res) => {
+  const {flightNumber, deviceId} = req.body;
+  // TODO: remove subscription request for flight number and notification token from DB
+  console.log(`unsubscribe ${flightNumber} from ${deviceId}`);
+  res.json({ message: 'Subscription removed' });
 });

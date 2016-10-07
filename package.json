@@ -7,8 +7,10 @@
     "start": "nodejs backend.js"
   },
   "dependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "eyes": "^0.1.8",
+    "moment": "^2.15.1",
     "mysql": "^2.11.1",
     "node-gcm": "^0.14.4",
     "node-schedule": "^1.1.1",
