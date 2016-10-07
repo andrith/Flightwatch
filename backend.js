@@ -108,13 +108,13 @@ app.get('/flight/:nr', (req, res) => {
 });
 
 app.post('/subscribe', (req, res) => {
-  const {flightNumber, deviceId} = req.body;
-  db.saveSubscription( flightNumber, deviceId );
+  const {flightNumber, deviceId, date} = req.body;
+  db.saveSubscription( flightNumber, date, deviceId );
   res.json({ message: 'Subscription added' });
 });
 
 app.post('/unsubscribe', (req, res) => {
-  const {flightNumber, deviceId} = req.body;
-  db.removeSubscription( flightNumber, deviceId );
+  const {flightNumber, deviceId, date} = req.body;
+  db.removeSubscription( flightNumber, date, deviceId );
   res.json({ message: 'Subscription removed' });
 });
