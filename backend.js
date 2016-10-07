@@ -9,6 +9,9 @@ var express = require('express');
 var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
+const path = require('path');
+
+app.use('/static', express.static(__dirname + '/html/public'))
 
 const db = require('./db');
 
@@ -20,6 +23,10 @@ const server = app.listen(3000, function () {
    const port = server.address().port
    console.log("Flightwatch app listening at http://%s:%s", host, port)
 });
+
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname + '/html/index.html'))
+})
 
 app.get('/scrape', function(req, res) {
 
