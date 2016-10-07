@@ -8,6 +8,19 @@ var schedule = require('node-schedule');
 var express = require('express');
 var app = express();
 var sio = require('socket.io');
+const moment = require('moment');
+
+// JSON file DB
+const low = require('lowdb');
+const fileAsync = require('lowdb/lib/file-async');
+const db = low('flightwatch.json', {
+  storage: fileAsync
+});
+db.defaults({
+  flightInfo: {},
+  subscriptions: {}
+}).value();
+
 
 const scraper = require('./scraper.js');
 
@@ -77,4 +90,48 @@ app.get('/', function(req, res) {
 
 app.listen(3000, function() {
     console.log('Example app listening on port 3000!');
+});
+
+
+
+// ### REST endpoints
+
+const server = app.listen(8088, function () {
+   var host = server.address().address
+   var port = server.address().port
+   console.log("Flightwatch app listening at http://%s:%s", host, port)
+});
+
+// parse json POST requests into req.body
+const bodyParser = require('body-parser');
+app.use( bodyParser.json() );
+
+app.get('/flight/:nr', (req, res) => {
+  const flightNumber = req.params.nr;
+  // TODO: fetch information for flight from DB
+  res.json({ flight: flightNumber, departure: moment(), arrival: moment() });
+});
+
+app.post('/subscribe', (req, res) => {
+  const {flightNumber, deviceId} = req.body;
+  // write subscription request for flight number and notification token to DB
+  if( ! db.get(['subscriptions', flightNumber]).value() ) {
+    db.set(['subscriptions', flightNumber], []).value();
+  }
+  db.get(['subscriptions', flightNumber]).push( deviceId ).value();
+  console.log(`subscribed ${flightNumber} to ${deviceId}`);
+  res.json({ message: 'Subscription added' });
+});
+
+app.post('/unsubscribe', (req, res) => {
+  const {flightNumber, deviceId} = req.body;
+  // remove subscription request for flight number and notification token from DB
+  const subscribedDeviceIds = db.get(['subscriptions', flightNumber]).value();
+  if( subscribedDeviceIds ) {
+    const remainingDeviceIds = subscribedDeviceIds.filter(
+      oneId => oneId !== deviceId );
+    db.set(['subscriptions', flightNumber], remainingDeviceIds).value();
+  }
+  console.log(`unsubscribed ${flightNumber} from ${deviceId}`);
+  res.json({ message: 'Subscription removed' });
 });
