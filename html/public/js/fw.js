@@ -1,4 +1,4 @@
-var endpoint;
+var gcm_endpoint;
 $(document).ready(function() {
   $("#result-page").hide();
   $("#search-button").click( function(e) {

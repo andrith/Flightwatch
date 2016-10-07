@@ -10,6 +10,7 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 const path = require('path');
+const fetch = require('node-fetch');
 
 app.use('/static', express.static(__dirname + '/html/public'))
 
@@ -17,6 +18,41 @@ const db = require('./db');
 
 const gateInfoScraper = require('./gate-info-scraper.js');
 
+function getFlight( flightNumber, date ) {
+  const flightPath = formatFlightNumberForPath( flightNumber );
+  const datePath = formatDateForPath( date );
+  return fetch(`https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${flightPath}/arr/${datePath}?appId=5d677d15&appKey=ecc0ee4be44763b1bcdb75e98cf8f005&utc=false&includeFlightPlan=false&maxPositions=2`)
+  .then( function(response){
+    return response.json();
+  })
+  .then( json => json );
+}
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function formatFlightNumberForPath( flightNumber ) {
+  var airline = "";
+  var number = "";
+  for (var i = 0; i < flightNumber.length; i++) {
+    var char = flightNumber.substring(i, i+1);
+    if(isNumeric(char)){
+      number += char;
+    } else {
+      airline += char;
+    }
+  }
+  return airline + "/" + number;
+}
+
+function formatDateForPath( date ) {
+  return '2016/10/7';
+}
+
+getFlight("FI657", "2016-10-07").then( json => {
+  console.log("flightstats json: ",  json );
+});
 
 const server = app.listen(3000, function () {
    const host = server.address().address
