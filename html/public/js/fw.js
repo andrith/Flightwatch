@@ -14,7 +14,6 @@ function httpGetAsync(theUrl, callback)
 $(document).ready(function() {
   $("#result-page").hide();
   $("#search-button").click( function(e) {
-    e.preventDefault();
     submitSearch();
     return false;
   });
@@ -46,9 +45,17 @@ function submitSearch(){
 }
 
 function processResults(response) {
-  console.log(response);
+  var parsedJSON = JSON.parse(response);
+  var request = parsedJSON.request;
+  var appendix = parsedJSON.appendix;
+  var flight = parsedJSON.flightTracks;
+  console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
+  $("#info-header").html(request.airline.requestedCode+request.flight.requested + " | " + flight[0].departureAirportFsCode + " to " + flight[0].arrivalAirportFsCode);
+  $("#departure").html();
+  $("#flight-status").html();
+  $("#arrival").html();
 }
 /*
   var iosocket = io.connect('http://localhost:1234');
