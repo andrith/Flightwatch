@@ -65,7 +65,7 @@ app.get('/scrape', function(req, res) {
   //     updateFlightInfoWithGateInfo( gateData );
   //   });
   // });
-})
+//})
 
 var j = schedule.scheduleJob('*/10 * * * * *', function() {
 
