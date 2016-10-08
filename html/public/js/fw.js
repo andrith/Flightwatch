@@ -1,4 +1,7 @@
 var gcm_endpoint;
+var $input;
+var requestedDate;
+var requestedFlight;
 
 function httpGetAsync(theUrl, callback)
 {
@@ -17,7 +20,7 @@ function displayResults() {
 }
 
 $(document).ready(function() {
-
+  $('.flightInfoCard').hide()
   $('#search-button').click(function() {
     $('#search-page').animate({
       left: '-20%'
@@ -32,7 +35,7 @@ $(document).ready(function() {
     return false;
   })
 
-  $('#result-page .logo').click(function() {
+  $('#result-page .backArrow').click(function() {
     $('#search-page').show()
     $('#result-page').animate({
       right: '-120%'
@@ -51,6 +54,21 @@ $(document).ready(function() {
     $("#result-page").hide();
   })
 
+  $("#flight-status").click( function(e){
+    subscribeToNotifications();
+    $.ajax({
+      type: "POST",
+      url: "/subscribe",
+      data: JSON.stringify({deviceId: gcm_endpoint, flightNumber: requestedFlight, date: requestedDate}),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data){console.log("subscription success: ",data);},
+      failure: function(errMsg) {
+          console.log("subscription error: ",errMsg);
+      }
+    });
+  })
+
   const monthNames = [
     "January", "February", "March",
     "April", "May", "June", "July",
@@ -65,12 +83,15 @@ $(document).ready(function() {
 
   $('#datepicker').val(day + ' ' + monthNames[monthIndex] + ', ' + year)
 
-  $('#datepicker').pickadate()
+  $input = $('#datepicker').pickadate()
 });
 
 function submitSearch(){
   //iosocket.emit("getFlight", {endpoint: endpoint, flightNumber: $("#flightNumber").val()})
-  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val(), processResults);
+  var picker = $input.pickadate('picker');
+  requestedFlight = $("#flightNumber").val()
+  requestedDate = picker.get('select', 'yyyy-mm-dd');
+  httpGetAsync("http://localhost:3000/flight/" + requestedFlight + "/date/" + requestedDate, processResults);
 }
 
 function ani(){
@@ -78,8 +99,8 @@ function ani(){
 }
 
 function processResults(response) {
-  console.log(response);
-  // $("#search-page").hide();
+  $('.placeholder-item').hide()
+  $('.flightInfoCard').show()
 
   var parsedJSON = JSON.parse(response);
   var request = parsedJSON.request;
@@ -88,10 +109,16 @@ function processResults(response) {
   console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
-  $("#info-header").html(flightStatus.carrierFsCode+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
-  $("#departure").html("Departure: " + flightStatus.operationalTimes.actualRunwayDeparture.dateUtc);
+  $(".flightNr").html(flightStatus.carrierFsCode.replace("*", "")+flightStatus.flightNumber );
+  $(".flightRoute .dep").html(flightStatus.departureAirportFsCode);
+  $(".flightRoute .arr").html(flightStatus.arrivalAirportFsCode);
+  var departDate = new Date(flightStatus.operationalTimes.actualRunwayDeparture.dateLocal);
+  var indexOfGMTdep = departDate.toString().indexOf("GMT");
+  $("#departure").html('<span class="smallText">Departure:</span> ' + departDate.toString().substring(0, indexOfGMTdep - 4));
   $("#flight-status").html();
-  $("#arrival").html("Arrival: " + flightStatus.operationalTimes.estimatedRunwayArrival.dateUtc);
+  var arrivalDate = new Date(flightStatus.operationalTimes.estimatedRunwayArrival.dateLocal);
+  var indexOfGMTarr = arrivalDate.toString().indexOf("GMT");
+  $("#arrival").html('<span class="smallText">Arrival:</span> ' + arrivalDate.toString().substring(0, indexOfGMTarr - 4));
 }
 /*
   var iosocket = io.connect('http://localhost:1234');

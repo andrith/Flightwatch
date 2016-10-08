@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Flightwatch</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="static/manifest.json">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <link rel="stylesheet" href="static/css/default.css">
     <link rel="stylesheet" href="static/css/default.date.css">
@@ -18,20 +18,40 @@
     <div id="container">
       <div id="search-page">
         <div class="logo"></div>
-        <div class="search-inputs">
-          <label for="flightNumber">Flight number</label>
-          <input type="text" id="flightNumber" placeholder="Flight number..." value="SK596" />
-          <label for="datepicker">Time of travel</label>
-          <input type="text" id="datepicker" />
-        </div>
-        <button id="search-button" class="button">Go</button>
+        <form>
+          <div class="search-inputs">
+            <label>Flight number</label>
+            <input type="text" id="flightNumber" placeholder="Flight number..." value="SK4788" />
+            <label>Time of flight</label>
+            <input type="text" id="datepicker" />
+          </div>
+          <button id="search-button" class="button">Go</button>
+        </form>
       </div>
       <div id="result-page" style="display:none;">
-        <div class="logo"></div>
-        <div id="info-header"></div>
-        <div id="departure"></div>
-        <div id="flight-status"><div id="flight-status-text"></div></div>
-        <div id="arrival"></div>
+        <div class="header">
+          <div class="backArrow"></div>
+          <div class="logo"></div>
+        </div>
+        <div class="flightInfoCard">
+          <div id="info-header">
+            <div class="flightNr smallText"></div>
+            <div class="flightRoute">
+              <span class="dep largeText"></span>
+              <span class="arr largeText"></span>
+            </div>
+          </div>
+          <div class="flightStatusContainer">
+            <div id="flight-status"><div class="circle"></div><div id="flight-status-text" class="mediumText"><p>Follow flight</p></div></div>
+          </div>
+          <div class="timeContainer">
+            <div id="departure" class="time mediumText"></div>
+            <div id="arrival" class="time mediumText"></div>
+          </div>
+          </div>
+          <div class="placeholder-item">
+            <div class="animated-background circle"></div>
+          </div>
       </div>
     </div>
 

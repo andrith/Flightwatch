@@ -19,17 +19,29 @@
 
 'use strict';
 
-if ('serviceWorker' in navigator) {
-  console.log('Service Worker is supported');
-  navigator.serviceWorker.register('static/js/sw.js').then(function() {
-    return navigator.serviceWorker.ready;
-  }).then(function(reg) {
-    console.log('Service Worker is ready :^)', reg);
-    reg.pushManager.subscribe({userVisibleOnly: true}).then(function(sub) {
-      console.log('endpoint:', sub.endpoint);
-      gcm_endpoint = sub.endpoint;
+function subscribeToNotifications() {
+
+  if ('serviceWorker' in navigator) {
+    console.log('Service Worker is supported');
+    navigator.serviceWorker.register('/static/js/sw.js', {scope: '/static/js/'})
+    .then(function(reg) {
+      console.log('Service Worker is ready :^)', reg);
+      reg.pushManager.subscribe({userVisibleOnly: true}).then(function(sub) {
+        var indexOfDeviceID = sub.endpoint.lastIndexOf("/") + 1;
+        gcm_endpoint = sub.endpoint.substring(indexOfDeviceID);
+        console.log(gcm_endpoint);
+
+        sendDeviceIdToServiceWorker( gcm_endpoint, reg.active );
+      });
+    }).catch(function(error) {
+      console.log('Service Worker error :^(', error);
     });
-  }).catch(function(error) {
-    console.log('Service Worker error :^(', error);
-  });
+  }
+}
+
+subscribeToNotifications();
+
+function sendDeviceIdToServiceWorker( deviceId, serviceWorker ) {
+
+  serviceWorker.postMessage( {deviceId} );
 }
