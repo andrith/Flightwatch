@@ -55,6 +55,7 @@ $(document).ready(function() {
   })
 
   $("#flight-status").click( function(e){
+    subscribeToNotifications();
     $.ajax({
       type: "POST",
       url: "/subscribe",
