@@ -31,18 +31,6 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/html/index.html'))
 })
 
-app.get('/heathrow', function(req, res) {
-   heathrowStatus.heathrowStatus().then( status => {
-     res.send(status)
-   })
-})
-
-app.get('/estimate', function(req, res) {
-  //Pass in the time time to filter out as a string.
-  heathrowEstimates.heathrowEstimates("17:30").then( estimate => {
-    res.send(estimate)
-  })
-})
 
 app.get('/scrape', function(req, res) {
 
@@ -73,6 +61,11 @@ var j = schedule.scheduleJob('*/10 * * * * *', function() {
 
     updateFlightInfoWithGateInfo( gateData );
   });
+
+  // heathrowStatus.heathrowStatus().then( gateData => {
+  //
+  //   updateFlightInfoWithGateInfo( gateData );
+  // })
 });
 
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
@@ -90,10 +83,7 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
       if( gateNotification ) {
         // send notificaton via gcm:
         notifSender.sendFlightNotificationToSubscribers(
-          gate.flightNr, gate.date, {
-            title: gateNotification,
-            body: gateNotification
-          }
+          gate.flightNr, gate.date, gateNotification
         );
 
         // TODO: save notification to last notification for flight key in db
@@ -115,7 +105,10 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
 function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
   let notification;
   if( ! prevGateInfo || prevGateInfo.status !== newGateInfo.status ) {
-    notification = newGateInfo.status;
+    notification = {
+      title: newGateInfo.flightNr,
+      body: newGateInfo.status
+    };
   }
   return notification;
 }
@@ -210,6 +203,13 @@ app.get('/gates/heathrow', function(req, res) {
    heathrowStatus.heathrowStatus().then( status => {
      res.send(status)
    })
+})
+
+app.get('/gates/heathrow/estimate/:time', function(req, res) {
+    const time = req.params.time;
+    heathrowEstimates.heathrowEstimates(time).then( estimate => {
+      res.send(estimate)
+    })
 })
 
 app.get('/gates/kef', function(req, res) {

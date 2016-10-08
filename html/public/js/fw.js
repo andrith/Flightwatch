@@ -67,6 +67,10 @@ $(document).ready(function() {
           console.log("subscription error: ",errMsg);
       }
     });
+
+    if( parsedJSON && parsedJSON.flightInfo && parsedJSON.flightInfo.gate ) {
+      $("#flight-status-text p").text( parsedJSON.flightInfo.gate.status );
+    }
   })
 
   const monthNames = [
@@ -98,11 +102,12 @@ function ani(){
   $('#result-page').addClass('move')
 }
 
+var parsedJSON;
 function processResults(response) {
   $('.placeholder-item').hide()
   $('.flightInfoCard').show()
 
-  var parsedJSON = JSON.parse(response);
+  parsedJSON = JSON.parse(response);
   var request = parsedJSON.request;
   var appendix = parsedJSON.appendix;
   var flightStatus = parsedJSON.flightStatus;
