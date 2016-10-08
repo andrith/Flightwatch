@@ -178,9 +178,12 @@ div {
     font-size: 2em;
     border: 1px solid #fff;
     border-radius: 50%;
-    margin: 20px auto 0;
     font-size: 45px;
     text-transform: uppercase;
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    margin-left: -50px;
 }
 input {
     border: 2px solid #DDD;
