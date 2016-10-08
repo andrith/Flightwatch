@@ -11,7 +11,6 @@ var sio = require('socket.io');
 const moment = require('moment');
 const path = require('path');
 
-
 app.use('/static', express.static(__dirname + '/html/public'))
 
 const db = require('./db');
@@ -19,6 +18,7 @@ const db = require('./db');
 const flightstats = require('./flightstats.js');
 const kefStatus = require('./gate-info-kef.js');
 const heathrowStatus = require('./gate-info-heathrow.js');
+const heathrowEstimates = require('./filter-heathrow-estimateTime.js')
 
 const server = app.listen(3000, function () {
    const host = server.address().address
@@ -32,9 +32,15 @@ app.get('/', function (req, res) {
 
 app.get('/heathrow', function(req, res) {
    heathrowStatus.heathrowStatus().then( status => {
-     updateHeathrowData(status)
      res.send(status)
    })
+})
+
+app.get('/estimate', function(req, res) {
+  //Pass in the time time to filter out as a string.
+  heathrowEstimates.heathrowEstimates("17:30").then( estimate => {
+    res.send(estimate)
+  })
 })
 
 app.get('/scrape', function(req, res) {
@@ -58,24 +64,14 @@ app.get('/scrape', function(req, res) {
 // ### ~~~ SCHEDULING ~~~
 
 // ### Gate info
-
-  var j = schedule.scheduleJob('*/5  * * * * *', function() {
-
-    kefStatus.scrape().then( gateData => {
-
-      updateFlightInfoWithGateInfo( gateData );
-    });
-  });
+  // var j = schedule.scheduleJob('*/5  * * * * *', function() {
+  //
+  //   kefStatus.scrape().then( gateData => {
+  //
+  //     updateFlightInfoWithGateInfo( gateData );
+  //   });
+  // });
 })
-
-function updateHeathrowData(heathrowData) {
-   const currentTime = moment().format("HH-MM")
-     heathrowData.filter(function(time){
-       return time.estimate = "06:00"
-       //Bæta við rétt tímabil
-     })
-}
-
 
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
@@ -118,38 +114,38 @@ function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
 
 // ### Flightstats
 
-var j = schedule.scheduleJob('*/5 * * * * *', function() {
-  let flightsUpdated = 0;
-  db.getSubscribedFlights().forEach( oneFlight => {
-
-    const [flightNumber, flightDate] = oneFlight.split("_");
-    if( moment().isSameOrBefore( flightDate, 'day' ) ) {
-      // the subscribed flight isn't fromt the past...
-
-      flightstats.getFlight(flightNumber, flightDate)
-      .then( json => {
-
-        console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
-        console.log("flightstats: ", json);
-        const flightInfo = db.getFlightInfo( flightNumber, flightDate );
-
-        // get a possible notification for flightstat changes
-        const flightstatsNotification =
-          getNotificationFromFlightstatInfo( flightInfo, json );
-        if( flightstatsNotification ) {
-          // TODO: send notificaton via gcm...
-
-          // TODO: save notification to last notification for flight key in db
-        }
-
-        flightInfo.stats = json;
-        db.setFlightInfo( flightNumber, flightDate, flightInfo );
-        flightsUpdated++;
-      });
-    }
-  });
-  console.log(`Updated ${flightsUpdated} flights with flightstats`);
-});
+// var j = schedule.scheduleJob('*/5 * * * * *', function() {
+//   let flightsUpdated = 0;
+//   db.getSubscribedFlights().forEach( oneFlight => {
+//
+//     const [flightNumber, flightDate] = oneFlight.split("_");
+//     if( moment().isSameOrBefore( flightDate, 'day' ) ) {
+//       // the subscribed flight isn't fromt the past...
+//
+//       flightstats.getFlight(flightNumber, flightDate)
+//       .then( json => {
+//
+//         console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
+//         console.log("flightstats: ", json);
+//         const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+//
+//         // get a possible notification for flightstat changes
+//         const flightstatsNotification =
+//           getNotificationFromFlightstatInfo( flightInfo, json );
+//         if( flightstatsNotification ) {
+//           // TODO: send notificaton via gcm...
+//
+//           // TODO: save notification to last notification for flight key in db
+//         }
+//
+//         flightInfo.stats = json;
+//         db.setFlightInfo( flightNumber, flightDate, flightInfo );
+//         flightsUpdated++;
+//       });
+//     }
+//   });
+//   console.log(`Updated ${flightsUpdated} flights with flightstats`);
+// });
 
 /**
  * If there are changes in interesting flightstats info, prepare a notification

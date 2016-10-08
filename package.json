@@ -12,6 +12,7 @@
     "axios": "^0.14.0",
     "body-parser": "^1.15.2",
     "cheerio": "^0.22.0",
+    "datejs": "^1.0.0-rc3",
     "express": "^4.14.0",
     "eyes": "^0.1.8",
     "lodash": "^4.16.4",
