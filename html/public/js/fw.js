@@ -11,17 +11,43 @@ function httpGetAsync(theUrl, callback)
     xmlHttp.send(null);
 }
 
+function displayResults() {
+  $("#result-page").show();
+  ani()
+}
+
 $(document).ready(function() {
-  $("#result-page").hide();
-  $("#search-button").click( function(e) {
-    e.preventDefault();
+  $('#search-button').click(function() {
+    $('#search-page').animate({
+      left: '-20%'
+    }, 300, function() {
+      $(this).hide()
+    })
+    $('#result-page').show().animate({
+      right: '0%'
+    }, 300)
     submitSearch();
     return false;
-  });
+  })
+
+  $('#result-page .logo').click(function() {
+    $('#search-page').show()
+    $('#result-page').animate({
+      right: '-120%'
+    }, 300, function() {
+      $(this).hide()
+    })
+    $('#search-page').animate({
+      right: '-20%'
+    }, 300, function() {
+      $(this).attr('style', '')
+    })
+  })
+  
   $("#done-button").click( function(e) {
     $("#search-page").show();
     $("#result-page").hide();
-  });
+  })
 
   const monthNames = [
     "January", "February", "March",
@@ -45,10 +71,14 @@ function submitSearch(){
   httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val(), processResults);
 }
 
+function ani(){
+  $('#result-page').addClass('move')
+}
+
 function processResults(response) {
   console.log(response);
-  $("#search-page").hide();
-  $("#result-page").show();
+  // $("#search-page").hide();
+
 }
 /*
   var iosocket = io.connect('http://localhost:1234');
