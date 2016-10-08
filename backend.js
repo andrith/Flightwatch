@@ -10,49 +10,15 @@ var app = express();
 var sio = require('socket.io');
 const moment = require('moment');
 const path = require('path');
-var axios = require('axios')
 
-const fetch = require('node-fetch');
 
 app.use('/static', express.static(__dirname + '/html/public'))
 
 const db = require('./db');
 
-const gateInfoScraper = require('./gate-info-scraper.js');
-
+const flightstats = require('./flightstats.js');
+const kefStatus = require('./gate-info-kef.js');
 const heathrowStatus = require('./gate-info-heathrow.js');
-
-function getFlight( flightNumber, date ) {
-  const flightPath = formatFlightNumberForPath( flightNumber );
-  const datePath = formatDateForPath( date );
-  var url = `https://api.flightstats.com/flex/flightstatus/rest/v2/json/flight/tracks/${flightPath}/arr/${datePath}?appId=5d677d15&appKey=ecc0ee4be44763b1bcdb75e98cf8f005&utc=false&includeFlightPlan=false&maxPositions=2`
-  return fetch(url)
-  .then( function(response){
-    return response.json();
-  });
-}
-
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-function formatFlightNumberForPath( flightNumber ) {
-  var airline = "";
-  var number = "";
-  for (var i = 0; i < flightNumber.length; i++) {
-    var char = flightNumber.substring(i, i+1);
-    if(isNumeric(char)){
-      number += char;
-    } else {
-      airline += char;
-    }
-  }
-  return airline + "/" + number;
-}
-
-function formatDateForPath( date ) {
-  return '2016/10/7';
-}
 
 const server = app.listen(3000, function () {
    const host = server.address().address
@@ -66,73 +32,162 @@ app.get('/', function (req, res) {
 
 app.get('/heathrow', function(req, res) {
    heathrowStatus.heathrowStatus().then( status => {
+     updateHeathrowData(status)
      res.send(status)
    })
 })
 
 app.get('/scrape', function(req, res) {
 
-    // parser.on('error', function(err) {
-    //     console.log('Parser error', err);
-    // });
+// parser.on('error', function(err) {
+//     console.log('Parser error', err);
+// });
 
-    gateInfoScraper.scrape().then( gateData => {
+//  var io = sio.listen(app.listen(1234));
+//    io.sockets.on('connection', function(socket) {
+//      socket.on("getFlight", (data) => {
+//        console.log(data);
+//        con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
+//          socket.emit("flight", dbRows);
+//        });
+//      });
+//    });
 
-      res.send( gateData );
-    })
 
-     var io = sio.listen(app.listen(1234));
-       io.sockets.on('connection', function(socket) {
-         socket.on("getFlight", (data) => {
-           console.log(data);
-           con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
-             socket.emit("flight", dbRows);
-           });
-         });
-       });
 
-});
-
+// ### ~~~ SCHEDULING ~~~
 
 // ### Gate info
 
-var j = schedule.scheduleJob('* * * * *', function() {
+var j = schedule.scheduleJob('*/5  * * * * *', function() {
 
-  gateInfoScraper.scrape().then( gateData => {
+  kefStatus.scrape().then( gateData => {
 
     updateFlightInfoWithGateInfo( gateData );
   });
 });
 
+function updateHeathrowData(heathrowData) {
+   const currentTime = moment().format("HH-MM")
+     heathrowData.filter(function(time){
+       return time.estimate = "06:00"
+       //Bæta við rétt tímabil
+     })
+}
+
+
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
-  gateInfoEntries.forEach( e => {
-    const flightSubscriptions = db.getSubscriptions( e.flightNr, e.date );
+  gateInfoEntries.forEach( gate => {
+    const flightSubscriptions = db.getSubscriptions( gate.flightNr, gate.date );
     if( flightSubscriptions && flightSubscriptions.length ) {
       // ok, so somone seems to be interested in this, so let's update flight information
-      console.log(`Updating flight info with gate info for flight ${e.flightNr}_${e.date}`);
-      const flightInfo = db.getFlightInfo( e.flightNr, e.date );
-      const updatedFlightInfo = Object.assign( flightInfo, e );
-      db.setFlightInfo( e.flightNr, e.date, updatedFlightInfo );
+      console.log(`Updating flight info with gate info for flight ${gate.flightNr}_${gate.date}`);
+      const flightInfo = db.getFlightInfo( gate.flightNr, gate.date );
+
+      // get a possible notification for gate changes
+      const gateNotification = getNotificationFromGateInfo( flightInfo.gate, gate );
+      if( gateNotification ) {
+        // TODO: send notificaton via gcm...
+
+        // TODO: save notification to last notification for flight key in db
+      }
+
+      // update the gate info in db:
+      flightInfo.gate = gate;
+      db.setFlightInfo( gate.flightNr, gate.date, flightInfo );
       flightsUpdated++;
     }
   });
   console.log(`Updated ${flightsUpdated} flights with gate info`);
 }
 
+/**
+ * If there are changes in interesting gate info, prepare a notification
+ * @return {String}   Notification regarding gate status change
+ */
+function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
+  let notification;
+  if( prevGateInfo.status !== newGateInfo.status ) {
+    notification = newGateInfo.status;
+  }
+  return notification;
+}
 
 
-// ### REST endpoints
+// ### Flightstats
+
+var j = schedule.scheduleJob('*/5 * * * * *', function() {
+  let flightsUpdated = 0;
+  db.getSubscribedFlights().forEach( oneFlight => {
+
+    const [flightNumber, flightDate] = oneFlight.split("_");
+    if( moment().isSameOrBefore( flightDate, 'day' ) ) {
+      // the subscribed flight isn't fromt the past...
+
+      flightstats.getFlight(flightNumber, flightDate)
+      .then( json => {
+
+        console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
+        console.log("flightstats: ", json);
+        const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+
+        // get a possible notification for flightstat changes
+        const flightstatsNotification =
+          getNotificationFromFlightstatInfo( flightInfo, json );
+        if( flightstatsNotification ) {
+          // TODO: send notificaton via gcm...
+
+          // TODO: save notification to last notification for flight key in db
+        }
+
+        flightInfo.stats = json;
+        db.setFlightInfo( flightNumber, flightDate, flightInfo );
+        flightsUpdated++;
+      });
+    }
+  });
+  console.log(`Updated ${flightsUpdated} flights with flightstats`);
+});
+
+/**
+ * If there are changes in interesting flightstats info, prepare a notification
+ * @return {String}   Notification regarding flightstats change
+ */
+function getNotificationFromFlightstatInfo( prevFlightInfo, newFlightInfo ) {
+  let notification;
+  if( false /* something interesting has changed in flight stats */ ) {
+    // TODO
+  }
+  return notification;
+}
+
+// ### ~~~ REST endpoints
 
 // parse json POST requests into req.body
 const bodyParser = require('body-parser');
 app.use( bodyParser.json() );
 
+app.get('/gates/heathrow', function(req, res) {
+   heathrowStatus.heathrowStatus().then( status => {
+     res.send(status)
+   })
+})
+
+app.get('/gates/kef', function(req, res) {
+    kefStatus.scrape().then( gateData => {
+      res.send( gateData );
+    })
+});
+
 app.get('/flight/:nr', (req, res) => {
   const flightNumber = req.params.nr;
-  getFlight(flightNumber, "2016-10-07").then( json => {
+  flightstats.getFlight(flightNumber, "2016-10-07").then( json => {
     console.log(json);
     res.json(json);
+  })
+  .catch( ex => {
+    console.error("error fetching flight: ", flightNumber);
   });
 });
 

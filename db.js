@@ -7,8 +7,13 @@ const db = low('flightwatch.json', {
 db.defaults({
   flightInfo: {},
   subscriptions: {},
-  pendingNotifications: {}
+  latestNotifications: {}
 }).value();
+
+exports.getSubscribedFlights = () => {
+
+  return Object.keys( db.get('subscriptions').value() );
+}
 
 exports.getSubscriptions = ( flightNumber, date ) => {
   const flightKey = getFlightKey( flightNumber, date );
