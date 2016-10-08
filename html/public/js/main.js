@@ -25,11 +25,18 @@ if ('serviceWorker' in navigator) {
   .then(function(reg) {
     console.log('Service Worker is ready :^)', reg);
     reg.pushManager.subscribe({userVisibleOnly: true}).then(function(sub) {
-      var indexOfDeviceID = sub.endpoint.lastIndexOf("/");
+      var indexOfDeviceID = sub.endpoint.lastIndexOf("/") + 1;
       gcm_endpoint = sub.endpoint.substring(indexOfDeviceID);
       console.log(gcm_endpoint);
+
+      sendDeviceIdToServiceWorker( gcm_endpoint, reg.active );
     });
   }).catch(function(error) {
     console.log('Service Worker error :^(', error);
   });
+}
+
+function sendDeviceIdToServiceWorker( deviceId, serviceWorker ) {
+
+  serviceWorker.postMessage( {deviceId} );
 }
