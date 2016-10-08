@@ -52,6 +52,10 @@ $(document).ready(function() {
     $("#result-page").hide();
   })
 
+  $("#follow-button").click( function(e) {
+    
+  })
+
   const monthNames = [
     "January", "February", "March",
     "April", "May", "June", "July",

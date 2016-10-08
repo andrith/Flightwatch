@@ -17,19 +17,33 @@
 *
 */
 
+// Version 0.1
+
 'use strict';
 
-if ('serviceWorker' in navigator) {
-  console.log('Service Worker is supported');
-  navigator.serviceWorker.register('/static/js/sw.js', {scope: '/static/js/'})
-  .then(function(reg) {
-    console.log('Service Worker is ready :^)', reg);
-    reg.pushManager.subscribe({userVisibleOnly: true}).then(function(sub) {
-      console.log('endpoint:', sub.endpoint);
-      var indexOfDeviceID = sub.endpoint.lastIndexOf("/");
-      gcm_endpoint = sub.endpoint.substring(indexOfDeviceID);
-    });
-  }).catch(function(error) {
-    console.log('Service Worker error :^(', error);
-  });
-}
+console.log('Started', self);
+
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
+  console.log('Installed', event);
+});
+
+self.addEventListener('activate', function(event) {
+  console.log('Activated', event);
+});
+
+self.addEventListener('push', function(event) {
+  var data = {};
+  if (event.data) {
+    data = event.data.json();
+  }
+  var title = data.title || "Something Has Happened";
+  var message = data.message || "Here's something you might want to check out.";
+  var icon = "logo.png";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      'body': message,
+      'icon': 'logo.png'
+    }));
+});

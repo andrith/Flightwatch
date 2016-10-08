@@ -118,38 +118,38 @@ function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
 
 // ### Flightstats
 
-var j = schedule.scheduleJob('*/5 * * * * *', function() {
-  let flightsUpdated = 0;
-  db.getSubscribedFlights().forEach( oneFlight => {
+//var j = schedule.scheduleJob('*/5 * * * * *', function() {
+//  let flightsUpdated = 0;
+//  db.getSubscribedFlights().forEach( oneFlight => {
 
-    const [flightNumber, flightDate] = oneFlight.split("_");
-    if( moment().isSameOrBefore( flightDate, 'day' ) ) {
+//    const [flightNumber, flightDate] = oneFlight.split("_");
+//    if( moment().isSameOrBefore( flightDate, 'day' ) ) {
       // the subscribed flight isn't fromt the past...
 
-      flightstats.getFlight(flightNumber, flightDate)
-      .then( json => {
+//      flightstats.getFlight(flightNumber, flightDate)
+//      .then( json => {
 
-        console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
-        console.log("flightstats: ", json);
-        const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+//        console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
+//        console.log("flightstats: ", json);
+//        const flightInfo = db.getFlightInfo( flightNumber, flightDate );
 
         // get a possible notification for flightstat changes
-        const flightstatsNotification =
-          getNotificationFromFlightstatInfo( flightInfo, json );
-        if( flightstatsNotification ) {
+//        const flightstatsNotification =
+//          getNotificationFromFlightstatInfo( flightInfo, json );
+//        if( flightstatsNotification ) {
           // TODO: send notificaton via gcm...
 
           // TODO: save notification to last notification for flight key in db
-        }
+//        }
 
-        flightInfo.stats = json;
-        db.setFlightInfo( flightNumber, flightDate, flightInfo );
-        flightsUpdated++;
-      });
-    }
-  });
-  console.log(`Updated ${flightsUpdated} flights with flightstats`);
-});
+//        flightInfo.stats = json;
+//        db.setFlightInfo( flightNumber, flightDate, flightInfo );
+//        flightsUpdated++;
+//      });
+//    }
+//  });
+//  console.log(`Updated ${flightsUpdated} flights with flightstats`);
+//});
 
 /**
  * If there are changes in interesting flightstats info, prepare a notification
@@ -186,6 +186,9 @@ app.get('/flight/:nr/date/:date', (req, res) => {
   const date = req.params.date;
   flightstats.getFlight(flightNumber, date).then( json => {
     console.log(json);
+    const flightInfo = db.getFlightInfo(flightNumber, date);
+    if(flightInfo)
+      json.flightInfo = flightInfo;
     res.json(json);
   })
   .catch( ex => {
