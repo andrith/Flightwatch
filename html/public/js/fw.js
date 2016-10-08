@@ -52,10 +52,12 @@ function processResults(response) {
   console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
-  $("#info-header").html(flightStatus.carrierFsCode+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
-  $("#departure").html("Departure: " + flightStatus.operationalTimes.actualRunwayDeparture.dateUtc);
+  $("#info-header").html(flightStatus.carrierFsCode.replace("*", "")+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
+  var departDate = new Date(flightStatus.operationalTimes.actualRunwayDeparture.dateLocal);
+  $("#departure").html("Departure: " + departDate.toString());
   $("#flight-status").html();
-  $("#arrival").html("Arrival: " + flightStatus.operationalTimes.estimatedRunwayArrival.dateUtc);
+  var arrivalDate = new Date(flightStatus.operationalTimes.estimatedRunwayArrival.dateLocal);
+  $("#arrival").html("Arrival: " + arrivalDate.toString());
 }
 /*
   var iosocket = io.connect('http://localhost:1234');

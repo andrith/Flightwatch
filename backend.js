@@ -120,7 +120,7 @@ app.get('/gates/kef', function(req, res) {
 
 app.get('/flight/:nr', (req, res) => {
   const flightNumber = req.params.nr;
-  flightstats.getFlight(flightNumber, "2016-10-07").then( json => {
+  flightstats.getFlight(flightNumber, "2016-10-08").then( json => {
     console.log(json);
     res.json(json);
   })
