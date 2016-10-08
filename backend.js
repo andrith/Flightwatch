@@ -59,13 +59,14 @@ app.get('/scrape', function(req, res) {
 
 // ### Gate info
 
-var j = schedule.scheduleJob('*/5  * * * * *', function() {
+  var j = schedule.scheduleJob('*/5  * * * * *', function() {
 
-  kefStatus.scrape().then( gateData => {
+    kefStatus.scrape().then( gateData => {
 
-    updateFlightInfoWithGateInfo( gateData );
+      updateFlightInfoWithGateInfo( gateData );
+    });
   });
-});
+})
 
 function updateHeathrowData(heathrowData) {
    const currentTime = moment().format("HH-MM")
