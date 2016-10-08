@@ -21,6 +21,8 @@
 
 'use strict';
 
+var deviceId;  // AKA gcm_endpoint
+
 console.log('Started', self);
 
 self.addEventListener('install', function(event) {
@@ -37,13 +39,38 @@ self.addEventListener('push', function(event) {
   if (event.data) {
     data = event.data.json();
   }
-  var title = data.title || "Something Has Happened";
-  var message = data.message || "Here's something you might want to check out.";
-  var icon = "logo.png";
 
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      'body': message,
-      'icon': 'logo.png'
-    }));
+  getNotificationPayloadFromServer().then( notifPayload => {
+
+    console.log("notifPayload: ", notifPayload);
+
+    var title = notifPayload.title || "Something Has Happened";
+    var body = notifPayload.body || "Here's something you might want to check out.";
+    var icon = "logo.png";
+
+    // event.waitUntil(
+      self.registration.showNotification( title, {
+        'body': body,
+        'icon': 'logo.png'
+      })
+    // );
+  })
+
 });
+
+
+self.addEventListener('message', function(event) {
+  if( event.data.deviceId ) {
+    deviceId = event.data.deviceId;
+    console.log("added device id to service worker member var: ", deviceId);
+  }
+});
+
+
+function getNotificationPayloadFromServer() {
+  return fetch(`//${location.host}/notification/${deviceId}`)
+  .then( response => {
+    return response.json();
+  })
+  .then( notificationMessagePayload => notificationMessagePayload );
+}

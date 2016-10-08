@@ -1,5 +1,7 @@
 var gcm_endpoint;
 var $input;
+var requestedDate;
+var requestedFlight;
 
 function httpGetAsync(theUrl, callback)
 {
@@ -52,8 +54,18 @@ $(document).ready(function() {
     $("#result-page").hide();
   })
 
-  $("#follow-button").click( function(e) {
-
+  $("#flight-status").click( function(e){
+    $.ajax({
+      type: "POST",
+      url: "/subscribe",
+      data: JSON.stringify({deviceId: gcm_endpoint, flightNumber: requestedFlight, date: requestedDate}),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data){console.log("subscription success: ",data);},
+      failure: function(errMsg) {
+          console.log("subscription error: ",errMsg);
+      }
+    });
   })
 
   const monthNames = [
@@ -76,8 +88,9 @@ $(document).ready(function() {
 function submitSearch(){
   //iosocket.emit("getFlight", {endpoint: endpoint, flightNumber: $("#flightNumber").val()})
   var picker = $input.pickadate('picker');
-  var date = picker.get('select', 'yyyy-mm-dd');
-  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val() + "/date/" + date, processResults);
+  requestedFlight = $("#flightNumber").val()
+  requestedDate = picker.get('select', 'yyyy-mm-dd');
+  httpGetAsync("http://localhost:3000/flight/" + requestedFlight + "/date/" + requestedDate, processResults);
 }
 
 function ani(){
