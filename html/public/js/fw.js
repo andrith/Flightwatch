@@ -32,7 +32,7 @@ $(document).ready(function() {
     return false;
   })
 
-  $('#result-page .logo').click(function() {
+  $('#result-page .backArrow').click(function() {
     $('#search-page').show()
     $('#result-page').animate({
       right: '-120%'
@@ -88,7 +88,10 @@ function processResults(response) {
   console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
-  $("#info-header").html(flightStatus.carrierFsCode+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
+  $(".flightNr").html(flightStatus.carrierFsCode+flightStatus.flightNumber);
+  // $(".flightRoute").html(flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
+  $(".flightRoute .dep").html(flightStatus.departureAirportFsCode);
+  $(".flightRoute .arr").html(flightStatus.arrivalAirportFsCode);
   $("#departure").html("Departure: " + flightStatus.operationalTimes.actualRunwayDeparture.dateUtc);
   $("#flight-status").html();
   $("#arrival").html("Arrival: " + flightStatus.operationalTimes.estimatedRunwayArrival.dateUtc);
