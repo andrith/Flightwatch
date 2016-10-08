@@ -99,11 +99,11 @@ function processResults(response) {
   $(".flightRoute .arr").html(flightStatus.arrivalAirportFsCode);
   var departDate = new Date(flightStatus.operationalTimes.actualRunwayDeparture.dateLocal);
   var indexOfGMTdep = departDate.toString().indexOf("GMT");
-  $("#departure").html("Departure: " + departDate.toString().substring(0, indexOfGMTdep));
+  $("#departure").html('<span class="smallText">Departure:</span> ' + departDate.toString().substring(0, indexOfGMTdep - 4));
   $("#flight-status").html();
   var arrivalDate = new Date(flightStatus.operationalTimes.estimatedRunwayArrival.dateLocal);
   var indexOfGMTarr = arrivalDate.toString().indexOf("GMT");
-  $("#arrival").html("Arrival: " + arrivalDate.toString().substring(0, indexOfGMTarr));
+  $("#arrival").html('<span class="smallText">Arrival:</span> ' + arrivalDate.toString().substring(0, indexOfGMTarr - 4));
 }
 /*
   var iosocket = io.connect('http://localhost:1234');

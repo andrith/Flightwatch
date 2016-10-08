@@ -20,7 +20,9 @@
         <div class="logo"></div>
         <form>
           <div class="search-inputs">
-            <input type="text" id="flightNumber" placeholder="Flight number..." />
+            <label>Flight number</label>
+            <input type="text" id="flightNumber" placeholder="Flight number..." value="SK4788" />
+            <label>Time of flight</label>
             <input type="text" id="datepicker" />
           </div>
           <button id="search-button" class="button">Go</button>
@@ -33,16 +35,19 @@
         </div>
         <div class="flightInfoCard">
           <div id="info-header">
-            <div class="flightNr"></div>
+            <div class="flightNr smallText"></div>
             <div class="flightRoute">
-              <span class="dep"></span>
-              <span class="arr"></span>
+              <span class="dep largeText"></span>
+              <span class="arr largeText"></span>
             </div>
           </div>
-          <div id="flight-status"><div id="flight-status-text"></div></div>
-          <div id="departure"></div>
-          <div id="arrival"></div>
-          <button id="follow-button" class="button">Follow flight</button>
+          <div class="flightStatusContainer">
+            <div id="flight-status"><div class="circle"></div><div id="flight-status-text" class="mediumText"><p>Follow flight</p></div></div>
+          </div>
+          <div class="timeContainer">
+            <div id="departure" class="time mediumText"></div>
+            <div id="arrival" class="time mediumText"></div>
+          </div>
         </div>
       </div>
     </div>

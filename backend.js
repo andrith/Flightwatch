@@ -59,13 +59,13 @@ app.get('/scrape', function(req, res) {
 
 // ### Gate info
 
-  var j = schedule.scheduleJob('*/5  * * * * *', function() {
-
-    kefStatus.scrape().then( gateData => {
-
-      updateFlightInfoWithGateInfo( gateData );
-    });
-  });
+  // var j = schedule.scheduleJob('*/5  * * * * *', function() {
+  //
+  //   kefStatus.scrape().then( gateData => {
+  //
+  //     updateFlightInfoWithGateInfo( gateData );
+  //   });
+  // });
 })
 
 function updateHeathrowData(heathrowData) {
