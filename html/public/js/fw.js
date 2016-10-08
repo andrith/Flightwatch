@@ -18,7 +18,7 @@ function displayResults() {
 }
 
 $(document).ready(function() {
-
+  $('.flightInfoCard').hide()
   $('#search-button').click(function() {
     $('#search-page').animate({
       left: '-20%'
@@ -81,7 +81,8 @@ function ani(){
 }
 
 function processResults(response) {
-  // $("#search-page").hide();
+  $('.timeline-item').hide()
+  $('.flightInfoCard').show()
 
   var parsedJSON = JSON.parse(response);
   var request = parsedJSON.request;
