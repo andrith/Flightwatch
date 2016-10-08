@@ -8,6 +8,8 @@ body {
     font-family: 'Dosis', sans-serif;
     background: #009999;
     color: white;
+    height: 100vh;
+    overflow: hidden;
 }
 #info-header {
     background-color: #009999;
@@ -217,3 +219,41 @@ label {
 }
 @media only screen and (max-width: 375px) {}
 @media only screen and (max-width: 320px) {}
+
+  .placeholder-item {
+      margin: 20px auto 0;
+      max-width: 472px;
+      min-height: 400px;
+      position: relative;
+  }
+
+  @keyframes placeHolderShimmer{
+    0%{
+        background-position: -468px 0
+    }
+    100%{
+        background-position: 468px 0
+    }
+}
+
+.animated-background {
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: placeHolderShimmer;
+    animation-timing-function: linear;
+    background: #f6f7f8;
+    background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+    background-size: 800px 104px;
+    height: 96px;
+    position: absolute;
+}
+
+.animated-background.circle {
+  height: 200px;
+  width: 200px;
+  border-radius: 50%;
+  left: 0;
+  right: 0;
+  top: 78px;
+}
