@@ -30,6 +30,15 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname + '/html/index.html'))
 })
 
+app.get('/heathrow', function(req, res) {
+   heathrowStatus.heathrowStatus().then( status => {
+     updateHeathrowData(status)
+     res.send(status)
+   })
+})
+
+app.get('/scrape', function(req, res) {
+
 // parser.on('error', function(err) {
 //     console.log('Parser error', err);
 // });
@@ -50,13 +59,23 @@ app.get('/', function (req, res) {
 
 // ### Gate info
 
-var j = schedule.scheduleJob('*/5  * * * * *', function() {
+  var j = schedule.scheduleJob('*/5  * * * * *', function() {
 
-  kefStatus.scrape().then( gateData => {
+    kefStatus.scrape().then( gateData => {
 
-    updateFlightInfoWithGateInfo( gateData );
+      updateFlightInfoWithGateInfo( gateData );
+    });
   });
-});
+})
+
+function updateHeathrowData(heathrowData) {
+   const currentTime = moment().format("HH-MM")
+     heathrowData.filter(function(time){
+       return time.estimate = "06:00"
+       //Bæta við rétt tímabil
+     })
+}
+
 
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
@@ -66,6 +85,16 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
       // ok, so somone seems to be interested in this, so let's update flight information
       console.log(`Updating flight info with gate info for flight ${gate.flightNr}_${gate.date}`);
       const flightInfo = db.getFlightInfo( gate.flightNr, gate.date );
+
+      // get a possible notification for gate changes
+      const gateNotification = getNotificationFromGateInfo( flightInfo.gate, gate );
+      if( gateNotification ) {
+        // TODO: send notificaton via gcm...
+
+        // TODO: save notification to last notification for flight key in db
+      }
+
+      // update the gate info in db:
       flightInfo.gate = gate;
       db.setFlightInfo( gate.flightNr, gate.date, flightInfo );
       flightsUpdated++;
@@ -73,6 +102,19 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   });
   console.log(`Updated ${flightsUpdated} flights with gate info`);
 }
+
+/**
+ * If there are changes in interesting gate info, prepare a notification
+ * @return {String}   Notification regarding gate status change
+ */
+function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
+  let notification;
+  if( prevGateInfo.status !== newGateInfo.status ) {
+    notification = newGateInfo.status;
+  }
+  return notification;
+}
+
 
 // ### Flightstats
 
@@ -90,6 +132,16 @@ var j = schedule.scheduleJob('*/5 * * * * *', function() {
         console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
         console.log("flightstats: ", json);
         const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+
+        // get a possible notification for flightstat changes
+        const flightstatsNotification =
+          getNotificationFromFlightstatInfo( flightInfo, json );
+        if( flightstatsNotification ) {
+          // TODO: send notificaton via gcm...
+
+          // TODO: save notification to last notification for flight key in db
+        }
+
         flightInfo.stats = json;
         db.setFlightInfo( flightNumber, flightDate, flightInfo );
         flightsUpdated++;
@@ -99,6 +151,17 @@ var j = schedule.scheduleJob('*/5 * * * * *', function() {
   console.log(`Updated ${flightsUpdated} flights with flightstats`);
 });
 
+/**
+ * If there are changes in interesting flightstats info, prepare a notification
+ * @return {String}   Notification regarding flightstats change
+ */
+function getNotificationFromFlightstatInfo( prevFlightInfo, newFlightInfo ) {
+  let notification;
+  if( false /* something interesting has changed in flight stats */ ) {
+    // TODO
+  }
+  return notification;
+}
 
 // ### ~~~ REST endpoints
 
@@ -118,9 +181,10 @@ app.get('/gates/kef', function(req, res) {
     })
 });
 
-app.get('/flight/:nr', (req, res) => {
+app.get('/flight/:nr/date/:date', (req, res) => {
   const flightNumber = req.params.nr;
-  flightstats.getFlight(flightNumber, "2016-10-08").then( json => {
+  const date = req.params.date;
+  flightstats.getFlight(flightNumber, date).then( json => {
     console.log(json);
     res.json(json);
   })

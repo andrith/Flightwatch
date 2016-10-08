@@ -1,4 +1,5 @@
 var gcm_endpoint;
+var $input;
 
 function httpGetAsync(theUrl, callback)
 {
@@ -11,16 +12,45 @@ function httpGetAsync(theUrl, callback)
     xmlHttp.send(null);
 }
 
+function displayResults() {
+  $("#result-page").show();
+  ani()
+}
+
 $(document).ready(function() {
-  $("#result-page").hide();
-  $("#search-button").click( function(e) {
+
+  $('#search-button').click(function() {
+    $('#search-page').animate({
+      left: '-20%'
+    }, 300, function() {
+      $(this).hide()
+    })
+    $('#result-page').show().animate({
+      right: '0%'
+    }, 300)
+
     submitSearch();
     return false;
-  });
+  })
+
+  $('#result-page .logo').click(function() {
+    $('#search-page').show()
+    $('#result-page').animate({
+      right: '-120%'
+    }, 300, function() {
+      $(this).hide()
+    })
+    $('#search-page').animate({
+      right: '-20%'
+    }, 300, function() {
+      $(this).attr('style', '')
+    })
+  })
+
   $("#done-button").click( function(e) {
     $("#search-page").show();
     $("#result-page").hide();
-  });
+  })
 
   const monthNames = [
     "January", "February", "March",
@@ -36,15 +66,23 @@ $(document).ready(function() {
 
   $('#datepicker').val(day + ' ' + monthNames[monthIndex] + ', ' + year)
 
-  $('#datepicker').pickadate()
+  $input = $('#datepicker').pickadate()
 });
 
 function submitSearch(){
   //iosocket.emit("getFlight", {endpoint: endpoint, flightNumber: $("#flightNumber").val()})
-  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val(), processResults);
+  var picker = $input.pickadate('picker');
+  var date = picker.get('select', 'yyyy-mm-dd');
+  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val() + "/date/" + date, processResults);
+}
+
+function ani(){
+  $('#result-page').addClass('move')
 }
 
 function processResults(response) {
+  // $("#search-page").hide();
+
   var parsedJSON = JSON.parse(response);
   var request = parsedJSON.request;
   var appendix = parsedJSON.appendix;
@@ -54,10 +92,12 @@ function processResults(response) {
   $("#result-page").show();
   $("#info-header").html(flightStatus.carrierFsCode.replace("*", "")+flightStatus.flightNumber + " | " + flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
   var departDate = new Date(flightStatus.operationalTimes.actualRunwayDeparture.dateLocal);
-  $("#departure").html("Departure: " + departDate.toString());
+  var indexOfGMTdep = departDate.toString().indexOf("GMT");
+  $("#departure").html("Departure: " + departDate.toString().substring(0, indexOfGMTdep));
   $("#flight-status").html();
   var arrivalDate = new Date(flightStatus.operationalTimes.estimatedRunwayArrival.dateLocal);
-  $("#arrival").html("Arrival: " + arrivalDate.toString());
+  var indexOfGMTarr = arrivalDate.toString().indexOf("GMT");
+  $("#arrival").html("Arrival: " + arrivalDate.toString().substring(0, indexOfGMTarr));
 }
 /*
   var iosocket = io.connect('http://localhost:1234');

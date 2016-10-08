@@ -11,17 +11,13 @@
     <link rel="stylesheet" href="static/css/default.css">
     <link rel="stylesheet" href="static/css/default.date.css">
     <!--script src="http://localhost:1234/socket.io/socket.io.js"></script-->
-    <!--script type="text/javascript" src="static/js/fw.js"></script-->
-    <script type="text/javascript" src="static/js/main.js"></script>
     <link rel="stylesheet" href="static/css/fw.css">
 
   </head>
   <body>
     <div id="container">
-      <div id="logo">
-        <img id="logo-img" src="static/img/logo.png">
-      </div>
       <div id="search-page">
+        <div class="logo"></div>
         <form>
           <div class="search-inputs">
             <input type="text" id="flightNumber" placeholder="Flight number..." />
@@ -30,10 +26,11 @@
           <button id="search-button" class="button">Go</button>
         </form>
       </div>
-      <div id="result-page">
+      <div id="result-page" style="display:none;">
+        <div class="logo"></div>
         <div id="info-header"></div>
-        <div id="departure"></div>
         <div id="flight-status"><div id="flight-status-text"></div></div>
+        <div id="departure"></div>
         <div id="arrival"></div>
       </div>
     </div>
