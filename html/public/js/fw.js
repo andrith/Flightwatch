@@ -98,7 +98,7 @@ function ani(){
 }
 
 function processResults(response) {
-  $('.timeline-item').hide()
+  $('.placeholder-item').hide()
   $('.flightInfoCard').show()
 
   var parsedJSON = JSON.parse(response);

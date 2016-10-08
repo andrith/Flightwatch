@@ -1,15 +1,10 @@
 *, *:before, *:after {
     box-sizing: border-box;
 }
-*:before, *:after {
-    box-sizing: inherit;
-}
 body {
     font-family: 'Dosis', sans-serif;
     background: #009999;
     color: white;
-    height: 100vh;
-    overflow: hidden;
 }
 #info-header {
     background-color: #009999;
@@ -34,6 +29,7 @@ body {
     width: 100%;
     margin: auto;
     position: relative;
+    max-width:700px;
 }
 #search-page {
   position: absolute;
@@ -99,7 +95,7 @@ body {
   font-size: 0.7em;
 }
 .flightRoute {
-  line-height: 8vh;
+  line-height: 16vh;
   float: left;
   width: 100%;
   margin: 0 auto;
@@ -167,7 +163,7 @@ body {
     right: 0;
 }
 #flight-status-text p {
-  max-width: 100px;
+  max-width: 200px;
   margin: 60px auto 0;
 }
 .circle {}
@@ -204,6 +200,10 @@ label {
   margin: 20px 0 0;
 }
 @media only screen and (max-width: 768px) {
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
   .flightRoute {
     line-height: 10vh;
   }

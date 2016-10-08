@@ -1,4 +1,5 @@
 {
   "name": "flightwatch-145717",
-  "gcm_sender_id": "321906927139"
+  "gcm_sender_id": "321906927139",
+  "orientation":  "portrait"
 }
