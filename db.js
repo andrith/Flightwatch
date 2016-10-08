@@ -55,6 +55,16 @@ exports.setFlightInfo = ( flightNumber, date, flightInfo ) => {
   db.set(['flightInfo', flightKey], flightInfo).value();
 }
 
+
+exports.setLastNotification = ( deviceId, notification ) => {
+  db.set(['latestNotifications', deviceId], notification).value();
+}
+
+exports.getLatestNotification = ( deviceId ) => {
+  return db.get(['latestNotifications', deviceId]).value();
+}
+
+
 function getFlightKey( flightNumber, date ) {
   return `${flightNumber}_${date}`;
 }

@@ -15,6 +15,7 @@ const path = require('path');
 app.use('/static', express.static(__dirname + '/html/public'))
 
 const db = require('./db');
+const notifSender = require('./notification-sender.js');
 
 const flightstats = require('./flightstats.js');
 const kefStatus = require('./gate-info-kef.js');
@@ -37,21 +38,21 @@ app.get('/heathrow', function(req, res) {
    })
 })
 
+function updateHeathrowData(heathrowData) {
+   const currentTime = moment().format("HH-MM")
+   heathrowData.filter(function(time){
+     return time.estimate = "06:00"
+     //Bæta við rétt tímabil
+   })
+}
+
 app.get('/scrape', function(req, res) {
 
-// parser.on('error', function(err) {
-//     console.log('Parser error', err);
-// });
+  kefStatus.scrape().then( gateData => {
 
-//  var io = sio.listen(app.listen(1234));
-//    io.sockets.on('connection', function(socket) {
-//      socket.on("getFlight", (data) => {
-//        console.log(data);
-//        con.query('SELECT * FROM flights WHERE flightNumber = ?' , data.flightNumber, function(err,dbRows){
-//          socket.emit("flight", dbRows);
-//        });
-//      });
-//    });
+    res.send( gateData );
+  });
+})
 
 
 
@@ -59,23 +60,13 @@ app.get('/scrape', function(req, res) {
 
 // ### Gate info
 
-  // var j = schedule.scheduleJob('*/5  * * * * *', function() {
-  //
-  //   kefStatus.scrape().then( gateData => {
-  //
-  //     updateFlightInfoWithGateInfo( gateData );
-  //   });
-  // });
-})
+var j = schedule.scheduleJob('*/10 * * * * *', function() {
 
-function updateHeathrowData(heathrowData) {
-   const currentTime = moment().format("HH-MM")
-     heathrowData.filter(function(time){
-       return time.estimate = "06:00"
-       //Bæta við rétt tímabil
-     })
-}
+  kefStatus.scrape().then( gateData => {
 
+    updateFlightInfoWithGateInfo( gateData );
+  });
+});
 
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
@@ -85,11 +76,18 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
       // ok, so somone seems to be interested in this, so let's update flight information
       console.log(`Updating flight info with gate info for flight ${gate.flightNr}_${gate.date}`);
       const flightInfo = db.getFlightInfo( gate.flightNr, gate.date );
-
+      console.log("flightInfo: ", flightInfo);
       // get a possible notification for gate changes
       const gateNotification = getNotificationFromGateInfo( flightInfo.gate, gate );
+      console.log("gateNotification: ", gateNotification);
       if( gateNotification ) {
-        // TODO: send notificaton via gcm...
+        // send notificaton via gcm:
+        notifSender.sendFlightNotificationToSubscribers(
+          gate.flightNr, gate.date, {
+            title: gateNotification,
+            body: gateNotification
+          }
+        );
 
         // TODO: save notification to last notification for flight key in db
       }
@@ -109,7 +107,7 @@ function updateFlightInfoWithGateInfo( gateInfoEntries ) {
  */
 function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
   let notification;
-  if( prevGateInfo.status !== newGateInfo.status ) {
+  if( ! prevGateInfo || prevGateInfo.status !== newGateInfo.status ) {
     notification = newGateInfo.status;
   }
   return notification;
@@ -117,39 +115,38 @@ function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
 
 
 // ### Flightstats
+var j = schedule.scheduleJob('*/15 * * * *', function() {
+  let flightsUpdated = 0;
+  db.getSubscribedFlights().forEach( oneFlight => {
 
-// var j = schedule.scheduleJob('*/5 * * * * *', function() {
-//   let flightsUpdated = 0;
-//   db.getSubscribedFlights().forEach( oneFlight => {
-//
-//     const [flightNumber, flightDate] = oneFlight.split("_");
-//     if( moment().isSameOrBefore( flightDate, 'day' ) ) {
-//       // the subscribed flight isn't fromt the past...
-//
-//       flightstats.getFlight(flightNumber, flightDate)
-//       .then( json => {
-//
-//         console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
-//         console.log("flightstats: ", json);
-//         const flightInfo = db.getFlightInfo( flightNumber, flightDate );
-//
-//         // get a possible notification for flightstat changes
-//         const flightstatsNotification =
-//           getNotificationFromFlightstatInfo( flightInfo, json );
-//         if( flightstatsNotification ) {
-//           // TODO: send notificaton via gcm...
-//
-//           // TODO: save notification to last notification for flight key in db
-//         }
-//
-//         flightInfo.stats = json;
-//         db.setFlightInfo( flightNumber, flightDate, flightInfo );
-//         flightsUpdated++;
-//       });
-//     }
-//   });
-//   console.log(`Updated ${flightsUpdated} flights with flightstats`);
-// });
+    const [flightNumber, flightDate] = oneFlight.split("_");
+    if( moment().isSameOrBefore( flightDate, 'day' ) ) {
+      // the subscribed flight isn't fromt the past...
+
+      flightstats.getFlight(flightNumber, flightDate)
+      .then( json => {
+
+        console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
+        console.log("flightstats: ", json);
+        const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+
+        // get a possible notification for flightstat changes
+        const flightstatsNotification =
+          getNotificationFromFlightstatInfo( flightInfo, json );
+        if( flightstatsNotification ) {
+          // TODO: send notificaton via gcm...
+
+          // TODO: save notification to last notification for flight key in db
+        }
+
+        flightInfo.stats = json;
+        db.setFlightInfo( flightNumber, flightDate, flightInfo );
+        flightsUpdated++;
+      });
+    }
+  });
+  console.log(`Updated ${flightsUpdated} flights with flightstats`);
+});
 
 /**
  * If there are changes in interesting flightstats info, prepare a notification
@@ -186,6 +183,9 @@ app.get('/flight/:nr/date/:date', (req, res) => {
   const date = req.params.date;
   flightstats.getFlight(flightNumber, date).then( json => {
     console.log(json);
+    const flightInfo = db.getFlightInfo(flightNumber, date);
+    if(flightInfo)
+      json.flightInfo = flightInfo;
     res.json(json);
   })
   .catch( ex => {
@@ -203,4 +203,11 @@ app.post('/unsubscribe', (req, res) => {
   const {flightNumber, deviceId, date} = req.body;
   db.removeSubscription( flightNumber, date, deviceId );
   res.json({ message: 'Subscription removed' });
+});
+
+app.get('/notification/:deviceId', (req, res) => {
+  const deviceId = req.params.deviceId;
+  console.log("deviceId: ", deviceId);
+  const notification = db.getLatestNotification( deviceId );
+  res.json( notification );
 });
