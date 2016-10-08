@@ -68,7 +68,6 @@ var j = schedule.scheduleJob('*/10 * * * * *', function() {
   });
 });
 
-
 function updateFlightInfoWithGateInfo( gateInfoEntries ) {
   let flightsUpdated = 0;
   gateInfoEntries.forEach( gate => {
