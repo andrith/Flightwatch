@@ -115,38 +115,38 @@ function getNotificationFromGateInfo( prevGateInfo, newGateInfo ) {
 
 
 // ### Flightstats
-// var j = schedule.scheduleJob('*/15 * * * *', function() {
-//   let flightsUpdated = 0;
-//   db.getSubscribedFlights().forEach( oneFlight => {
-//
-//     const [flightNumber, flightDate] = oneFlight.split("_");
-//     if( moment().isSameOrBefore( flightDate, 'day' ) ) {
-//       // the subscribed flight isn't fromt the past...
-//
-//       flightstats.getFlight(flightNumber, flightDate)
-//       .then( json => {
-//
-//         console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
-//         console.log("flightstats: ", json);
-//         const flightInfo = db.getFlightInfo( flightNumber, flightDate );
-//
-//         // get a possible notification for flightstat changes
-//         const flightstatsNotification =
-//           getNotificationFromFlightstatInfo( flightInfo, json );
-//         if( flightstatsNotification ) {
-//           // TODO: send notificaton via gcm...
-//
-//           // TODO: save notification to last notification for flight key in db
-//         }
-//
-//         flightInfo.stats = json;
-//         db.setFlightInfo( flightNumber, flightDate, flightInfo );
-//         flightsUpdated++;
-//       });
-//     }
-//   });
-//   console.log(`Updated ${flightsUpdated} flights with flightstats`);
-// });
+var j = schedule.scheduleJob('*/15 * * * *', function() {
+  let flightsUpdated = 0;
+  db.getSubscribedFlights().forEach( oneFlight => {
+
+    const [flightNumber, flightDate] = oneFlight.split("_");
+    if( moment().isSameOrBefore( flightDate, 'day' ) ) {
+      // the subscribed flight isn't fromt the past...
+
+      flightstats.getFlight(flightNumber, flightDate)
+      .then( json => {
+
+        console.log(`Updating flight info with flightstats for flight ${flightNumber}_${flightDate}`);
+        console.log("flightstats: ", json);
+        const flightInfo = db.getFlightInfo( flightNumber, flightDate );
+
+        // get a possible notification for flightstat changes
+        const flightstatsNotification =
+          getNotificationFromFlightstatInfo( flightInfo, json );
+        if( flightstatsNotification ) {
+          // TODO: send notificaton via gcm...
+
+          // TODO: save notification to last notification for flight key in db
+        }
+
+        flightInfo.stats = json;
+        db.setFlightInfo( flightNumber, flightDate, flightInfo );
+        flightsUpdated++;
+      });
+    }
+  });
+  console.log(`Updated ${flightsUpdated} flights with flightstats`);
+});
 
 /**
  * If there are changes in interesting flightstats info, prepare a notification

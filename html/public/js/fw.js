@@ -55,8 +55,17 @@ $(document).ready(function() {
   })
 
   $("#flight-status").click( function(e){
-    console.log(gcm_endpoint);
-    $.post( "subscribe", {deviceId: gcm_endpoint, flightNumber: requestedFlight, date: requestedDate});
+    $.ajax({
+      type: "POST",
+      url: "/subscribe",
+      data: JSON.stringify({deviceId: gcm_endpoint, flightNumber: requestedFlight, date: requestedDate}),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: function(data){console.log("subscription success: ",data);},
+      failure: function(errMsg) {
+          console.log("subscription error: ",errMsg);
+      }
+    });
   })
 
   const monthNames = [
