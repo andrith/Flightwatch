@@ -18,13 +18,13 @@
     <div id="container">
       <div id="search-page">
         <div class="logo"></div>
-        <div class="search-inputs">
-          <label for="flightNumber">Flight number</label>
-          <input type="text" id="flightNumber" placeholder="Flight number..." value="SK596" />
-          <label for="datepicker">Time of travel</label>
-          <input type="text" id="datepicker" />
-        </div>
-        <button id="search-button" class="button">Go</button>
+        <form>
+          <div class="search-inputs">
+            <input type="text" id="flightNumber" placeholder="Flight number..." />
+            <input type="text" id="datepicker" />
+          </div>
+          <button id="search-button" class="button">Go</button>
+        </form>
       </div>
       <div id="result-page" style="display:none;">
         <div class="header">
@@ -39,8 +39,8 @@
               <span class="arr"></span>
             </div>
           </div>
-          <div id="departure"></div>
           <div id="flight-status"><div id="flight-status-text"></div></div>
+          <div id="departure"></div>
           <div id="arrival"></div>
         </div>
       </div>

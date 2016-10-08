@@ -1,4 +1,5 @@
 var gcm_endpoint;
+var $input;
 
 function httpGetAsync(theUrl, callback)
 {
@@ -65,12 +66,14 @@ $(document).ready(function() {
 
   $('#datepicker').val(day + ' ' + monthNames[monthIndex] + ', ' + year)
 
-  $('#datepicker').pickadate()
+  $input = $('#datepicker').pickadate()
 });
 
 function submitSearch(){
   //iosocket.emit("getFlight", {endpoint: endpoint, flightNumber: $("#flightNumber").val()})
-  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val(), processResults);
+  var picker = $input.pickadate('picker');
+  var date = picker.get('select', 'yyyy-mm-dd');
+  httpGetAsync("http://localhost:3000/flight/" + $("#flightNumber").val() + "/date/" + date, processResults);
 }
 
 function ani(){
@@ -78,7 +81,6 @@ function ani(){
 }
 
 function processResults(response) {
-  console.log(response);
   // $("#search-page").hide();
 
   var parsedJSON = JSON.parse(response);
@@ -88,13 +90,16 @@ function processResults(response) {
   console.log(parsedJSON);
   $("#search-page").hide();
   $("#result-page").show();
-  $(".flightNr").html(flightStatus.carrierFsCode+flightStatus.flightNumber);
-  // $(".flightRoute").html(flightStatus.departureAirportFsCode + " to " + flightStatus.arrivalAirportFsCode);
+  $(".flightNr").html(flightStatus.carrierFsCode.replace("*", "")+flightStatus.flightNumber );
   $(".flightRoute .dep").html(flightStatus.departureAirportFsCode);
   $(".flightRoute .arr").html(flightStatus.arrivalAirportFsCode);
-  $("#departure").html("Departure: " + flightStatus.operationalTimes.actualRunwayDeparture.dateUtc);
+  var departDate = new Date(flightStatus.operationalTimes.actualRunwayDeparture.dateLocal);
+  var indexOfGMTdep = departDate.toString().indexOf("GMT");
+  $("#departure").html("Departure: " + departDate.toString().substring(0, indexOfGMTdep));
   $("#flight-status").html();
-  $("#arrival").html("Arrival: " + flightStatus.operationalTimes.estimatedRunwayArrival.dateUtc);
+  var arrivalDate = new Date(flightStatus.operationalTimes.estimatedRunwayArrival.dateLocal);
+  var indexOfGMTarr = arrivalDate.toString().indexOf("GMT");
+  $("#arrival").html("Arrival: " + arrivalDate.toString().substring(0, indexOfGMTarr));
 }
 /*
   var iosocket = io.connect('http://localhost:1234');

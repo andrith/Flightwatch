@@ -181,9 +181,10 @@ app.get('/gates/kef', function(req, res) {
     })
 });
 
-app.get('/flight/:nr', (req, res) => {
+app.get('/flight/:nr/date/:date', (req, res) => {
   const flightNumber = req.params.nr;
-  flightstats.getFlight(flightNumber, "2016-10-07").then( json => {
+  const date = req.params.date;
+  flightstats.getFlight(flightNumber, date).then( json => {
     console.log(json);
     res.json(json);
   })
