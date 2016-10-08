@@ -53,7 +53,7 @@ $(document).ready(function() {
   })
 
   $("#follow-button").click( function(e) {
-    
+
   })
 
   const monthNames = [
@@ -85,7 +85,7 @@ function ani(){
 }
 
 function processResults(response) {
-  $('.timeline-item').hide()
+  $('.placeholder-item').hide()
   $('.flightInfoCard').show()
 
   var parsedJSON = JSON.parse(response);
